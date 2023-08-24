@@ -1,7 +1,6 @@
 use replicate_rust::Replicate;
 
-#[tokio::main]
-async fn main() {
+fn initalize_replicate() -> Replicate {
     // let api_key: String = std::env::var("REPLICATE_API_TOKEN")
 
     let api_key = std::env::var("REPLICATE_API_TOKEN").unwrap_or_else(|_| {
@@ -10,11 +9,15 @@ async fn main() {
     });
 
     // Create a new Replicate client.
-    let replicate = Replicate::new(
+    Replicate::new(
         api_key,
         format!("replicate-rust/{}", env!("CARGO_PKG_VERSION")),
         String::from("https://api.replicate.com/v1/predictions"),
-    );
+    )
+}
+
+fn main() {
+    let replicate = initalize_replicate();
 
     // Construct the inputs.
     let mut inputs = std::collections::HashMap::new();
@@ -24,8 +27,8 @@ async fn main() {
     let result = replicate.run("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478".to_string(), inputs);
 
     // Print the result.
-    match result.await {
-        Ok(result) => println!("Success : {:?}", result),
+    match result {
+        Ok(result) => println!("Success : {:?}", result.output),
         Err(e) => println!("Error : {}", e),
     }
 }

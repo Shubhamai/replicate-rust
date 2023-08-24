@@ -1,26 +1,11 @@
+use prediction::Prediction;
 use serde::Serialize;
 use std::collections::HashMap;
 
-#[derive(Serialize)]
-struct Payload<K: serde::Serialize, V: serde::ser::Serialize> {
-    version: String,
-    input: HashMap<K, V>,
-}
-
-struct RetryPolicy {
-    max_retries: u32,
-    strategy: RetryStrategy,
-}
-
-enum RetryStrategy {
-    // Retry with a fixed delay.
-    FixedDelay(u32),
-    // Retry with an exponential backoff.
-    // ExponentialBackoff(u32),
-}
+pub mod prediction;
 
 // Parse a model version string into its model and version parts.
-fn parse_model_version(s: &str) -> Option<(&str, &str)> {
+fn parse_version(s: &str) -> Option<(&str, &str)> {
     // Split the string at the colon.
     let mut parts = s.splitn(2, ':');
 
@@ -50,41 +35,25 @@ impl Replicate {
         }
     }
 
-    pub async fn run<K: serde::Serialize, V: serde::ser::Serialize>(
+    pub fn run<K: serde::Serialize, V: serde::ser::Serialize>(
         &self,
-        model_version: String,
+        version: String,
         inputs: HashMap<K, V>,
         // TODO : Perhaps not Box<dyn std::error::Error> but something more specific?
-    ) -> Result<HashMap<String, serde_json::Value>, Box<dyn std::error::Error>> {
-        // Parse the model version string.
-        let (model, version) = parse_model_version(&model_version).unwrap();
+    ) -> Result<prediction::GetPrediction, Box<dyn std::error::Error>> {
+        let prediction = prediction::Prediction::create(self, version, inputs)?;
+        // prediction.create(model_version, inputs);
 
-        // Construct the request payload
-        let payload = Payload {
-            version: version.to_string(),
-            input: inputs,
-        };
-
-        let client = reqwest::Client::new();
-        let response = client
-            .post(&self.base_url)
-            .header("Authorization", format!("Token {}", &self.auth))
-            .header("User-Agent", &self.user_agent)
-            .json(&payload)
-            .send()
-            .await?;
-
-        if response.status().is_success() {
-            let result: HashMap<String, serde_json::Value> = response.json().await?;
-            // println!("{:?}", result);
-            Ok(result)
-        } else {
-            let error_message = response.text().await?;
-            // println!("Error message: {}", error_message);
-
-            Err(error_message.into())
-        }
+        prediction.wait()
     }
+
+    // fn predictions<K: serde::Serialize, V: serde::ser::Serialize>(
+    //     &self,
+    //     version: String,
+    //     inputs: HashMap<K, V>,
+    // ) -> Result<Prediction, Box<dyn std::error::Error>> {
+    //     prediction::Prediction::create(self, version, inputs)
+    // }
 }
 
 // mod tests {
