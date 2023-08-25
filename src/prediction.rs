@@ -115,7 +115,7 @@ pub struct GetPrediction {
     pub started_at: String,
     pub completed_at: Option<String>,
 
-    source: Option<PredictionSource>,
+    pub source: Option<PredictionSource>,
 
     // Status of the prediction
     pub status: PredictionStatus,
@@ -127,6 +127,27 @@ pub struct GetPrediction {
     pub logs: String,
 
     pub metrics: Option<HashMap<String, serde_json::Value>>,
+}
+
+pub struct PredictionsListItem {
+    id: String,
+    version: String,
+
+    urls: PredictionsUrls,
+
+    created_at: String,
+    started_at: String,
+    completed_at: Option<String>,
+
+    source: Option<PredictionSource>,
+
+    status: PredictionStatus,
+}
+pub struct ListPredictions {
+    previous: Option<String>,
+    next: Option<String>,
+
+    results: Vec<PredictionsListItem>,
 }
 
 // type ListPredictions = Vec<GetPrediction>;
@@ -210,6 +231,22 @@ impl<'a> Prediction<'a> {
         Ok(())
     }
 
+    pub fn cancel(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let client = reqwest::blocking::Client::new();
+        let response = client
+            .post(format!(
+                "https://api.replicate.com/v1/predictions/{}/cancel",
+                self.id
+            ))
+            .header("Authorization", format!("Token {}", &self.parent.auth))
+            .header("User-Agent", &self.parent.user_agent)
+            .send()?;
+
+        self.reload()?;
+
+        Ok(())
+    }
+
     // Blocks until the predictions are ready and returns the predictions
     pub fn wait(self) -> Result<GetPrediction, Box<dyn std::error::Error>> {
         // TODO : Implement a retry policy
@@ -249,5 +286,43 @@ impl<'a> Prediction<'a> {
                 }
             }
         }
+    }
+}
+
+pub struct CreatePredictionStruct<'a> {
+    // Holds a reference to a Replicate
+    parent: &'a crate::Replicate,
+}
+
+impl<'a> CreatePredictionStruct<'a> {
+    pub fn new(rep: &'a crate::Replicate) -> Self {
+        Self { parent: rep }
+    }
+
+    pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
+        self,
+        version: String,
+        inputs: HashMap<K, V>,
+    ) -> Prediction<'a> {
+        match Prediction::create(&self.parent, version, inputs) {
+            Ok(prediction) => prediction,
+            Err(e) => panic!("Error : {}", e),
+        }
+    }
+
+    pub fn list(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let client = reqwest::blocking::Client::new();
+
+        let response = client
+            .get("https://api.replicate.com/v1/predictions")
+            .header("Authorization", format!("Token {}", self.parent.auth))
+            .header("User-Agent", &self.parent.user_agent)
+            .send()?;
+
+        let response_string = response.text()?;
+        // let response_struct: ListPredictions = serde_json::from_str(&response_string)?;
+        println!("Response : {:?}", response_string);
+
+        Ok(())
     }
 }

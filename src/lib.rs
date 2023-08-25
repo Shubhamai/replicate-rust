@@ -1,5 +1,3 @@
-use prediction::Prediction;
-use serde::Serialize;
 use std::collections::HashMap;
 
 pub mod prediction;
@@ -27,33 +25,28 @@ pub struct Replicate {
 }
 
 impl Replicate {
-    pub fn new(auth: String, user_agent: String, base_url: String) -> Self {
+    pub fn new(auth: String) -> Self {
         Self {
             auth,
-            user_agent,
-            base_url,
+            user_agent: format!("replicate-rust/{}", env!("CARGO_PKG_VERSION")),
+            base_url: String::from("https://api.replicate.com/v1/predictions"),
         }
     }
 
-    pub fn run<K: serde::Serialize, V: serde::ser::Serialize>(
+    pub fn run<K: serde::Serialize, V: serde::Serialize>(
         &self,
         version: String,
         inputs: HashMap<K, V>,
         // TODO : Perhaps not Box<dyn std::error::Error> but something more specific?
     ) -> Result<prediction::GetPrediction, Box<dyn std::error::Error>> {
-        let prediction = prediction::Prediction::create(self, version, inputs)?;
-        // prediction.create(model_version, inputs);
+        let prediction = prediction::CreatePredictionStruct::new(self).create(version, inputs);
 
         prediction.wait()
     }
 
-    // fn predictions<K: serde::Serialize, V: serde::ser::Serialize>(
-    //     &self,
-    //     version: String,
-    //     inputs: HashMap<K, V>,
-    // ) -> Result<Prediction, Box<dyn std::error::Error>> {
-    //     prediction::Prediction::create(self, version, inputs)
-    // }
+    pub fn predictions(&self) -> prediction::CreatePredictionStruct {
+        prediction::CreatePredictionStruct::new(self)
+    }
 }
 
 // mod tests {

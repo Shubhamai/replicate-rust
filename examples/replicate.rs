@@ -9,11 +9,7 @@ fn initalize_replicate() -> Replicate {
     });
 
     // Create a new Replicate client.
-    Replicate::new(
-        api_key,
-        format!("replicate-rust/{}", env!("CARGO_PKG_VERSION")),
-        String::from("https://api.replicate.com/v1/predictions"),
-    )
+    Replicate::new(api_key)
 }
 
 fn main() {
@@ -23,12 +19,29 @@ fn main() {
     let mut inputs = std::collections::HashMap::new();
     inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-    // Run the model.
-    let result = replicate.run("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478".to_string(), inputs);
+    let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
 
-    // Print the result.
-    match result {
-        Ok(result) => println!("Success : {:?}", result.output),
-        Err(e) => println!("Error : {}", e),
-    }
+    // // Run the model.
+    // let result = replicate.run(version, inputs);
+
+    // // Print the result.
+    // match result {
+    //     Ok(result) => println!("Success : {:?}", result.output),
+    //     Err(e) => println!("Error : {}", e),
+    // }
+
+    // let mut prediction = replicate.predictions().create(version, inputs);
+    // println!("Prediction : {:?}", prediction.status);
+    // let _ = prediction.reload();
+    // println!("Prediction : {:?}", prediction.status);
+    // let _ = prediction.cancel();
+    // println!("Predictions : {:?}", prediction.status);
+    // println!("Predictionss : {:?}", prediction.status);
+
+    // match prediction.wait() {
+    //     Ok(result) => println!("Success : {:?}", result.output),
+    //     Err(e) => println!("Error : {}", e),
+    // }
+
+    let preictions = replicate.predictions().list();
 }
