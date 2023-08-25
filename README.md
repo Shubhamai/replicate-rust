@@ -1,3 +1,6 @@
+[![Latest Version]][crates.io] [![Documentation]][docs.rs] ![License]
+
+
 # Replicate Rust client
 
 This is an Unofficial Rust client for [Replicate](https://replicate.com).
@@ -123,3 +126,11 @@ match replicate.predictions.list() {
 }
 // Success : ListPredictions { ... }
 ```
+
+
+
+[crates.io]: https://crates.io/crates/replicate-rust
+[Latest Version]: https://img.shields.io/crates/v/replicate-rust.svg
+[Documentation]: https://docs.rs/replicate-rust/badge.svg
+[docs.rs]: https://docs.rs/replicate-rust
+[License]: https://img.shields.io/crates/l/replicate-rust.svg
