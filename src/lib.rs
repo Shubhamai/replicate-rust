@@ -1,35 +1,46 @@
 use std::collections::HashMap;
 
+pub mod client;
+pub mod collection;
+pub mod model;
 pub mod prediction;
+pub mod training;
+pub mod version;
 
-// Parse a model version string into its model and version parts.
-fn parse_version(s: &str) -> Option<(&str, &str)> {
-    // Split the string at the colon.
-    let mut parts = s.splitn(2, ':');
+pub mod enums;
+pub mod libs;
+pub mod structs;
+mod utils;
 
-    // Extract the model and version parts.
-    let model = parts.next()?;
-    let version = parts.next()?;
+use structs::Collection::Collection;
+use structs::Model::Model;
+use structs::Training::Training;
+use structs::{GetPrediction::GetPrediction, Prediction::Prediction};
 
-    // Check if the model part contains a slash.
-    if !model.contains('/') {
-        return None;
-    }
-
-    Some((model, version))
-}
 pub struct Replicate {
-    auth: String,
-    user_agent: String,
-    base_url: String,
+    client: client::Client,
+    pub predictions: Prediction,
+    pub models: Model,
+    pub training: Training,
+    pub collection: Collection,
 }
 
 impl Replicate {
     pub fn new(auth: String) -> Self {
+        let client = client::Client::new(auth);
+
+        // TODO : Maybe reference instead of clone
+        let predictions = Prediction::new(client.clone());
+        let models = Model::new(client.clone());
+        let training = Training::new(client.clone());
+        let collection = Collection::new(client.clone());
+
         Self {
-            auth,
-            user_agent: format!("replicate-rust/{}", env!("CARGO_PKG_VERSION")),
-            base_url: String::from("https://api.replicate.com/v1/predictions"),
+            client,
+            predictions,
+            models,
+            training,
+            collection,
         }
     }
 
@@ -38,14 +49,10 @@ impl Replicate {
         version: String,
         inputs: HashMap<K, V>,
         // TODO : Perhaps not Box<dyn std::error::Error> but something more specific?
-    ) -> Result<prediction::GetPrediction, Box<dyn std::error::Error>> {
-        let prediction = prediction::CreatePredictionStruct::new(self).create(version, inputs);
+    ) -> Result<GetPrediction, Box<dyn std::error::Error>> {
+        let prediction = Prediction::new(self.client.clone()).create(version, inputs);
 
         prediction.wait()
-    }
-
-    pub fn predictions(&self) -> prediction::CreatePredictionStruct {
-        prediction::CreatePredictionStruct::new(self)
     }
 }
 
