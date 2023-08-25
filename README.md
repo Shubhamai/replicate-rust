@@ -22,6 +22,8 @@ export REPLICATE_API_TOKEN=<your token>
 ## Run a model
 
 ```rust
+use replicate_rust::Replicate;
+
 let replicate = Replicate::new();
 
 // Construct the inputs.

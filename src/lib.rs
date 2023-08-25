@@ -5,16 +5,10 @@
 //! https://replicate.ai/stability-ai/stable-diffusion) model.
 //!
 //! ```
-//! use replicate::Replicate;
-//!
-//! // Reading the API key from an environment variable.
-//! let api_key = std::env::var("REPLICATE_API_TOKEN").unwrap_or_else(|_| {
-//!     eprintln!("REPLICATE_API_TOKEN not set");
-//!     std::process::exit(1)
-//! });
+//! use replicate_rust::Replicate;
 //!
 //! // Create a new Replicate client.
-//! let replicate = Replicate::new(api_key)
+//! let replicate = Replicate::new()
 //!
 //! // Creating the inputs
 //! let mut inputs = std::collections::HashMap::new();
@@ -64,12 +58,11 @@ pub struct Replicate {
 ///
 impl Replicate {
     /// Create a new Replicate client.
-    /// # Arguments
-    /// * `api_key` - The API key to use for authentication.
+    /// 
     /// # Example
     /// ```
-    /// use replicate::Replicate;
-    /// let replicate = Replicate::new("api_key");
+    /// use replicate_rust::Replicate;
+    /// let replicate = Replicate::new();
     /// ```
     pub fn new() -> Self {
         let client = client::Client::new();
@@ -95,8 +88,8 @@ impl Replicate {
     /// * `inputs` - The inputs to the model in the form of a HashMap.
     /// # Example
     /// ```
-    /// use replicate::Replicate;
-    /// let replicate = Replicate::new("api_key");
+    /// use replicate_rust::Replicate;
+    /// let replicate = Replicate::new();
     ///
     /// // Construct the inputs.
     /// let mut inputs = std::collections::HashMap::new();

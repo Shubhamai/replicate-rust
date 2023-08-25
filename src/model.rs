@@ -10,7 +10,7 @@
 //! # Example
 //! ```
 //! use replicate_rust::Replicate;
-//! let replicate = Replicate::new("api_key");
+//! let replicate = Replicate::new();
 //!
 //! // Run the model and wait for the result in a blocking manner.
 //! let result = replicate.run(version, inputs);
@@ -58,7 +58,7 @@ impl Model {
     /// # Example
     /// ```
     /// use replicate_rust::Replicate;
-    /// let replicate = Replicate::new("api_key");
+    /// let replicate = Replicate::new();
     ///
     /// match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
     ///    Ok(result) => println!("Success : {:?}", result),
