@@ -1,8 +1,39 @@
-use crate::structs::{
-    CreateTraining::CreateTraining, CreateTrainingPayload::CreateTrainingPayload,
-    GetTraining::GetTraining, ListTrainings::ListTraining, Training::Training,
-    TrainingOptions::TrainingOptions,
-};
+//! Used to interact with the [Training Endpoints](https://replicate.com/docs/reference/http#trainings.create).
+//!
+//!
+//! # Example
+//!
+//! TODO
+//!
+//!
+
+use std::collections::HashMap;
+
+use crate::api_definitions::{CreateTraining, GetTraining, ListTraining, WebhookEvents};
+
+pub struct TrainingOptions {
+    pub destination: String,
+
+    pub input: HashMap<String, String>,
+
+    pub webhook: String,
+    _webhook_events_filter: Option<WebhookEvents>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct CreateTrainingPayload {
+    pub destination: String,
+
+    pub input: HashMap<String, String>,
+
+    pub webhook: String,
+}
+
+// #[derive(Clone)]
+pub struct Training {
+    // Holds a reference to a Replicate
+    pub parent: crate::client::Client,
+}
 
 impl Training {
     pub fn new(rep: crate::client::Client) -> Self {

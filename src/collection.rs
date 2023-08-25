@@ -1,7 +1,34 @@
-use crate::structs::{
-    Collection::Collection, GetCollectionModels::GetCollectionModels,
-    ListCollectionModels::ListCollectionModels,
-};
+//! Used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
+//!
+//! The Collection struct is used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
+//!
+//! The Collection struct is initialized with a Client struct.
+//!
+//! The Collection struct has two methods:
+//!     
+//!   - `get`
+//!   - `list`
+//!
+//! # Example
+//!
+//! ```
+//! use replicate_rust::Replicate;
+//!
+//! let replicate = Replicate::new();
+//!
+//! match replicate.collection.get(String::from("audio-generation")) {
+//!     Ok(result) => println!("Success : {:?}", result),
+//!     Err(e) => println!("Error : {}", e),
+//! }
+//!
+//!
+
+use crate::api_definitions::{GetCollectionModels, ListCollectionModels};
+
+pub struct Collection {
+    // Holds a reference to a Replicate
+    pub parent: crate::client::Client,
+}
 
 impl Collection {
     pub fn new(rep: crate::client::Client) -> Self {

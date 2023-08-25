@@ -1,16 +1,56 @@
-use crate::{
-    enums::{PredictionStatus::PredictionStatus, RetryStrategy::RetryStrategy},
-    structs::{
-        CreatePrediction::CreatePrediction, GetPrediction::GetPrediction,
-        PredictionClient::PredictionClient, PredictionPayload::PredictionPayload,
-        RetryPolicy::RetryPolicy,
-    },
-    utils::Prediction::parse_version,
-};
+//! Helper struct for the prediction struct
+
 use std::collections::HashMap;
 
+use crate::{
+    api_definitions::{CreatePrediction, GetPrediction, PredictionStatus, PredictionsUrls},
+    prediction::PredictionPayload,
+};
+
+use super::retry::{RetryPolicy, RetryStrategy};
+
+///Parse a model version string into its model and version parts.
+pub fn parse_version(s: &str) -> Option<(&str, &str)> {
+    // Split the string at the colon.
+    let mut parts = s.splitn(2, ':');
+
+    // Extract the model and version parts.
+    let model = parts.next()?;
+    let version = parts.next()?;
+
+    // Check if the model part contains a slash.
+    if !model.contains('/') {
+        return None;
+    }
+
+    Some((model, version))
+}
+
+/// Helper struct for the prediction struct
+pub struct PredictionClient {
+    // Holds a reference to a Replicate
+    pub parent: crate::client::Client,
+
+    // Unique identifier of the prediction
+    // id: String,
+    pub id: String,
+    pub version: String,
+
+    pub urls: PredictionsUrls,
+
+    pub created_at: String,
+
+    pub status: PredictionStatus,
+
+    pub input: HashMap<String, serde_json::Value>,
+
+    pub error: Option<String>,
+
+    pub logs: Option<String>,
+}
+
 impl PredictionClient {
-    // Run the prediction of the model version with the given input
+    /// Run the prediction of the model version with the given input
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
         // &mut self,
         rep: crate::client::Client,
@@ -55,7 +95,7 @@ impl PredictionClient {
         }
     }
 
-    // Returns the latest status of the prediction
+    /// Returns the latest info of the prediction
     pub fn reload(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -81,6 +121,7 @@ impl PredictionClient {
         Ok(())
     }
 
+    /// Cancel the prediction
     pub fn cancel(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
         client
@@ -97,7 +138,7 @@ impl PredictionClient {
         Ok(())
     }
 
-    // Blocks until the predictions are ready and returns the predictions
+    /// Blocks until the predictions are ready and returns the predictions
     pub fn wait(self) -> Result<GetPrediction, Box<dyn std::error::Error>> {
         // TODO : Implement a retry policy
         let retry_policy = RetryPolicy::new(5, RetryStrategy::FixedDelay(1000));
@@ -114,22 +155,15 @@ impl PredictionClient {
             let response_struct: GetPrediction = serde_json::from_str(&response_string)?;
 
             match response_struct.status {
-                PredictionStatus::succeeded => {
-                    // println!("Success : {:?}", response_string);
+                PredictionStatus::succeeded
+                | PredictionStatus::failed
+                | PredictionStatus::canceled => {
                     return Ok(response_struct);
-                }
-                PredictionStatus::failed => {
-                    // println!("Failed : {:?}", response_string);
-                    return Err(response_string.into());
                 }
                 PredictionStatus::processing | PredictionStatus::starting => {
                     // Retry
                     // TODO : Fix the retry implementation
                     retry_policy.step();
-                }
-                PredictionStatus::canceled => {
-                    // println!("Canceled : {:?}", response_string);
-                    return Err(response_string.into());
                 }
             }
         }

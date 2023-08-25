@@ -1,15 +1,69 @@
-use crate::structs::{GetModel::GetModel, Model::Model};
+//! # Used to interact with the [Model Endpoints](https://replicate.com/docs/reference/http#models.get).
+//!
+//! The model module contains all the functionality for interacting with the model endpoints of the Replicate API.
+//! Currently supports the following endpoint:
+//! * [Get Model](https://replicate.com/docs/reference/http#models.get)
+//! * [Get Model Versions](https://replicate.com/docs/reference/http#models.versions.get)
+//! * [List Model Versions](https://replicate.com/docs/reference/http#models.versions.list)
+//! * [Delete Model Version](https://replicate.com/docs/reference/http#models.versions.delete)
+//!
+//! # Example
+//! ```
+//! use replicate_rust::Replicate;
+//! let replicate = Replicate::new("api_key");
+//!
+//! // Run the model and wait for the result in a blocking manner.
+//! let result = replicate.run(version, inputs);
+//!
+//! match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
+//!    Ok(result) => println!("Success : {:?}", result),
+//!   Err(e) => println!("Error : {}", e),
+//! };
+//! ```
 
+use crate::{api_definitions::GetModel, version::Version};
+
+// #[derive(Clone)]
+pub struct Model {
+    // Holds a reference to a Replicate
+    pub parent: crate::client::Client,
+    pub versions: Version,
+}
+
+/// Model struct contains all the functionality for interacting with the model endpoints of the Replicate API.
+/// Currently supports the following endpoint:
+/// * [Get Model](https://replicate.com/docs/reference/http#models.get)
+/// * [Get Model Versions](https://replicate.com/docs/reference/http#models.versions.get)
+/// * [List Model Versions](https://replicate.com/docs/reference/http#models.versions.list)
+/// * [Delete Model Version](https://replicate.com/docs/reference/http#models.versions.delete)
+///
 impl Model {
+    /// Create a new Model struct.
+    /// # Arguments
+    /// * `rep` - The client (`crate::client::Client`) to use for authentication and communication.
+    ///
     pub fn new(rep: crate::client::Client) -> Self {
-        let versions = crate::structs::Version::Version::new(rep.clone());
+        let versions = Version::new(rep.clone());
         Self {
             parent: rep,
             versions,
         }
     }
 
-    // Get the model by name
+    /// Get the details of a model.
+    /// # Arguments
+    /// * `model_owner` - The owner of the model.
+    /// * `model_name` - The name of the model.
+    ///
+    /// # Example
+    /// ```
+    /// use replicate_rust::Replicate;
+    /// let replicate = Replicate::new("api_key");
+    ///
+    /// match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
+    ///    Ok(result) => println!("Success : {:?}", result),
+    ///    Err(e) => println!("Error : {}", e),
+    /// };
     pub fn get(
         &self,
         model_owner: String,

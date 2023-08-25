@@ -1,19 +1,7 @@
 use replicate_rust::Replicate;
 
-fn initalize_replicate() -> Replicate {
-    // let api_key: String = std::env::var("REPLICATE_API_TOKEN")
-
-    let api_key = std::env::var("REPLICATE_API_TOKEN").unwrap_or_else(|_| {
-        eprintln!("REPLICATE_API_TOKEN not set");
-        std::process::exit(1)
-    });
-
-    // Create a new Replicate client.
-    Replicate::new(api_key)
-}
-
 fn main() {
-    let replicate = initalize_replicate();
+    let replicate = Replicate::new();
 
     // Construct the inputs.
     let mut inputs = std::collections::HashMap::new();
@@ -30,23 +18,23 @@ fn main() {
     //     Err(e) => println!("Error : {}", e),
     // }
 
-    let mut prediction = replicate.predictions.create(version, inputs);
-    println!("Prediction : {:?}", prediction.status);
-    let _ = prediction.reload();
-    println!("Prediction : {:?}", prediction.status);
-    let _ = prediction.cancel();
-    println!("Predictions : {:?}", prediction.status);
-    println!("Predictionss : {:?}", prediction.status);
+    // let mut prediction = replicate.predictions.create(version, inputs);
+    // println!("Prediction : {:?}", prediction.status);
+    // // let _ = prediction.cancel();
+    // println!("Predictions : {:?}", prediction.status);
+    // println!("Predictionss : {:?}", prediction.status);
+    // let _ = prediction.reload();
+    // println!("Prediction : {:?}", prediction.logs);
 
-    match prediction.wait() {
-        Ok(result) => println!("Success : {:?}", result.output),
-        Err(e) => println!("Error : {}", e),
-    }
-
-    // match replicate.predictions.list() {
-    //     Ok(result) => println!("Success : {:?}", result),
+    // match prediction.wait() {
+    //     Ok(result) => println!("Success : {:?}", result.output),
     //     Err(e) => println!("Error : {}", e),
     // }
+
+    match replicate.predictions.list() {
+        Ok(result) => println!("Success : {:?}", result),
+        Err(e) => println!("Error : {}", e),
+    }
 
     // match replicate
     //     .models
