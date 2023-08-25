@@ -127,6 +127,71 @@ match replicate.predictions.list() {
 // Success : ListPredictions { ... }
 ```
 
+---
+
+## Get model Information
+
+```rust
+match replicate.models.get(String::from("replicate"), String::from("hello-world"))
+    {
+        Ok(result) => println!("Success : {:?}", result),
+        Err(e) => println!("Error : {}", e),
+};
+
+// Success : GetModel { ... }
+```
+
+## Get Versions List
+
+```rust
+match replicate
+        .models
+        .versions
+        .list(String::from("replicate"), String::from("hello-world"))
+    {
+        Ok(result) => println!("Success : {:?}", result),
+        Err(e) => println!("Error : {}", e),
+};
+// Success : ListModelVersions { ... }
+``````
+
+## Get Model Version Information
+
+```rust
+match replicate.models.versions.get(
+        String::from("kvfrans"),
+        String::from("clipdraw"),
+        String::from("5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b"),
+    ) {
+        Ok(result) => println!("Success : {:?}", result),
+        Err(e) => println!("Error : {}", e),
+}
+// Success : GetModelVersion { ... }
+```
+
+---
+
+## Get Collection Information
+
+```rust
+match replicate.collection.get(String::from("audio-generation")) {
+        Ok(result) => println!("Success : {:?}", result),
+        Err(e) => println!("Error : {}", e),
+    }
+
+// Success : GetCollectionModels { ... }
+```
+
+## Get Collection Lists
+
+```rust
+match replicate.collection.list() {
+        Ok(result) => println!("Success : {:?}", result),
+        Err(e) => println!("Error : {}", e),
+    }
+
+// Success : ListCollectionModels { ... }
+```
 
 
 [crates.io]: https://crates.io/crates/replicate-rust
