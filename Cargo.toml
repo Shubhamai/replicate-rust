@@ -1,7 +1,13 @@
 [package]
 name = "replicate-rust"
+description = "An Unofficial Rust Client for Replicate."
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/shubhamai/replicate-rust/"
+license-file = "LICENSE"
+authors = ["Shubhamai"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -9,4 +15,3 @@ edition = "2021"
 reqwest = {version = "0.11.20", features = ["json", "blocking"]}
 serde = {version = "1.0.186", features = ["derive"]}
 serde_json = "1.0.105"
-tokio = { version = "1.32.0", features = ["full"] }
