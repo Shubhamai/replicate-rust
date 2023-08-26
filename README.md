@@ -23,9 +23,7 @@
 
 </p>
 
----
-
-> An Unofficial Rust client for <a href="https://replicate.com">Replicate</a>. Provides a type-safe interface by deserializing API responses into Rust structs. 
+An Unofficial Rust client for <a href="https://replicate.com">Replicate</a>. Provides a type-safe interface by deserializing API responses into Rust structs. 
 
 ## Getting Started
 
