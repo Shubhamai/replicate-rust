@@ -5,11 +5,11 @@
 <p align="center">An Unofficial Rust client for <a href="https://replicate.com">Replicate</a> with built-in deserialization to Rust structs 
 <div align="center">
 
-<!-- [![Build](https://github.com/shubhamai/replicate-rust/actions/workflows/build.yml/badge.svg)](https://github.com/shubhamai/replicate-rust/actions/workflows/build.yml) 
-[![codecov](https://codecov.io/gh/shubhamai/replicate-rust/branch/main/graph/badge.svg)](https://codecov.io/gh/shubhamai/replicate-rust)-->
-[![Latest Version]][crates.io] [![Documentation]][docs.rs] ![License]
+<!--[![codecov](https://codecov.io/gh/shubhamai/replicate-rust/branch/main/graph/badge.svg)](https://codecov.io/gh/shubhamai/replicate-rust)-->
+[![Documentation]][docs.rs] [![Latest Version]][crates.io]
+[![Tests](https://github.com/Shubhamai/replicate-rust/actions/workflows/tests.yml/badge.svg)](https://github.com/Shubhamai/replicate-rust/actions/workflows/tests.yml)
+<a href="https://crates.io/crates/replicate-rust"><img src="https://img.shields.io/crates/d/replicate-rust"></a>
 [![Rust](https://img.shields.io/badge/rust-1.72%2B-blue.svg?maxAge=3600)](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1720-2023-08-24)
-
 </div>
 
 <p align="center">
