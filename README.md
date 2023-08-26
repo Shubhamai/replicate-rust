@@ -42,25 +42,25 @@ export REPLICATE_API_TOKEN=<your token>
 Here's an example using `replicate_rust` to run a model. 
 
 ```rust
-    use replicate_rust::{Replicate, config::Config};
+use~ replicate_rust::{Replicate, config::Config};
 
-    let config = Config::default();
-    let replicate = Replicate::new(config);
+let config = Config::default();
+let replicate = Replicate::new(config);
 
-    // Construct the inputs.
-    let mut inputs = std::collections::HashMap::new();
-    inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+// Construct the inputs.
+let mut inputs = std::collections::HashMap::new();
+inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-    let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
 
-    // Run the model.
-    let result = replicate.run(version, inputs);
+// Run the model.
+let result = replicate.run(version, inputs);
 
-    // Print the result.
-    match result {
-        Ok(result) => println!("Success : {:?}", result.output),
-        Err(e) => println!("Error : {}", e),
-    }
+// Print the result.
+match result {
+    Ok(result) => println!("Success : {:?}", result.output),
+    Err(e) => println!("Error : {}", e),
+}
 // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
 ```
 
