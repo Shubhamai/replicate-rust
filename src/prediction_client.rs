@@ -286,3 +286,66 @@ impl PredictionClient {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{config::Config, Replicate};
+
+    use super::*;
+    use httpmock::{Method::POST, MockServer};
+    use serde_json::json;
+
+    #[test]
+    fn test_create() -> Result<(), Box<dyn std::error::Error>> {
+        let server = MockServer::start();
+
+        let post_mock = server.mock(|when, then| {
+            when.method(POST).path("/predictions");
+            then.status(200).json_body_obj(&json!(  {
+                "id": "ufawqhfynnddngldkgtslldrkq",
+                "version":
+                  "5c7d5dc6dd8bf75c1acaa8565735e7986bc5b66206b55cca93cb72c9bf15ccaa",
+                "urls": {
+                  "get": "https://api.replicate.com/v1/predictions/ufawqhfynnddngldkgtslldrkq",
+                  "cancel":
+                    "https://api.replicate.com/v1/predictions/ufawqhfynnddngldkgtslldrkq/cancel",
+                },
+                "created_at": "2022-04-26T22:13:06.224088Z",
+                "started_at": None::<String>,
+                "completed_at": None::<String>,
+                "status": "starting",
+                "input": {
+                  "text": "Alice",
+                },
+                "output": None::<String>,
+                "error": None::<String>,
+                "logs": None::<String>,
+                "metrics": {},
+              }
+            ));
+        });
+
+        let config = Config {
+            auth: String::from("test"),
+            base_url: server.base_url(),
+            ..Config::default()
+        };
+        let replicate = Replicate::new(config);
+
+        let mut input = HashMap::new();
+        input.insert(String::from("text"), String::from("Alice"));
+
+        let result = replicate.predictions.create(
+            String::from(
+                "owner/model:632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
+            ),
+            input,
+        );
+        assert_eq!(result.id, "ufawqhfynnddngldkgtslldrkq");
+
+        // Ensure the mocks were called as expected
+        post_mock.assert();
+
+        Ok(())
+    }
+}

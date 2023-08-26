@@ -59,7 +59,38 @@ impl Config {
             eprintln!("No API token provided. You need to set the REPLICATE_API_TOKEN environment variable or create a client with `Config {{auth: String::from('REPLICATE_API_TOKEN'), ..Default::default()}}`.
 
 You can find your API key on https://replicate.com");
+
             std::process::exit(1);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default() {
+        let config = Config::default();
+
+        assert_eq!(config.auth, String::new());
+        assert_eq!(
+            config.user_agent,
+            format!("replicate-rust/{}", env!("CARGO_PKG_VERSION"))
+        );
+        assert_eq!(
+            config.base_url,
+            String::from("https://api.replicate.com/v1")
+        );
+    }
+
+    // Check if auth is set. It is supposed to exit with code 1.
+    #[test]
+    fn test_check_auth() {
+        let config = Config {
+            auth: "Test".to_string(),
+            ..Default::default()
+        };
+        config.check_auth();
     }
 }

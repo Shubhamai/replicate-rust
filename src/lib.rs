@@ -66,10 +66,10 @@ pub struct Replicate {
     pub models: Model,
 
     /// Holds a reference to a Training struct. Use to create a new training run.
-    pub training: Training,
+    pub trainings: Training,
 
     /// Holds a reference to a Collection struct. Use to get and list model collections present in Replicate.
-    pub collection: Collection,
+    pub collections: Collection,
 }
 
 /// Rust Client for interacting with the [Replicate API](https://replicate.com/docs/api/).
@@ -90,15 +90,15 @@ impl Replicate {
         // TODO : Maybe reference instead of clone
         let predictions = Prediction::new(config.clone());
         let models = Model::new(config.clone());
-        let training = Training::new(config.clone());
-        let collection = Collection::new(config.clone());
+        let trainings = Training::new(config.clone());
+        let collections = Collection::new(config.clone());
 
         Self {
             config,
             predictions,
             models,
-            training,
-            collection,
+            trainings,
+            collections,
         }
     }
 
@@ -144,12 +144,86 @@ impl Replicate {
     }
 }
 
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use httpmock::{
+        Method::{GET, POST},
+        MockServer,
+    };
+    use serde_json::json;
 
-//     #[test]
-//     fn it_works() {
-//         let result = add(2, 2);
-//         assert_eq!(result, 4);
-//     }
-// }
+    #[test]
+    fn test_run() -> Result<(), Box<dyn std::error::Error>> {
+        let server = MockServer::start();
+
+        // Mock the POST response
+        let post_mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/predictions")
+                .json_body_obj(&json!({
+                    "version": "v1",
+                    "input": {"text": "world"}
+                }));
+            then.status(200).json_body_obj(&json!({
+                "id": "p1",
+                "version": "v1",
+                "urls": {
+                    "get": format!("{}/predictions/p1", server.base_url()),
+                    "cancel": format!("{}/predictions/p1", server.base_url()),
+                },
+                "created_at": "2022-04-26T20:00:40.658234Z",
+                "completed_at": "2022-04-26T20:02:27.648305Z",
+                "source": "api",
+                "status": "processing",
+                "input": {"text": "world"},
+                "output": None::<String>,
+                "error": None::<String>,
+                "logs": None::<String>,
+            }));
+        });
+
+        // Mock the GET response
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/predictions/p1");
+            then.status(200).json_body_obj(&json!({
+                "id": "p1",
+                "version": "v1",
+                "urls": {
+                    "get": format!("{}/predictions/p1", server.base_url()),
+                    "cancel": format!("{}/predictions/p1", server.base_url()),
+                },
+                "created_at": "2022-04-26T20:00:40.658234Z",
+                "completed_at": "2022-04-26T20:02:27.648305Z",
+                "source": "api",
+                "status": "succeeded",
+                "input": {"text": "world"},
+                "output": "hello world",
+                "error": None::<String>,
+                "logs": "",
+            }));
+        });
+
+        let config = Config {
+            auth: String::from("test"),
+            base_url: server.base_url(),
+            ..Config::default()
+        };
+        let replicate = Replicate::new(config);
+
+        let mut inputs = std::collections::HashMap::new();
+        inputs.insert("text", "world");
+
+        let version = String::from("test/model:v1");
+        let result = replicate.run(version, inputs).unwrap();
+
+        // Assert that the returned value is correct
+        assert_eq!(result.output, Some(serde_json::to_value("hello world")?));
+
+        // Ensure the mocks were called as expected
+        post_mock.assert();
+        get_mock.assert();
+
+        Ok(())
+    }
+}

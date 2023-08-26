@@ -72,12 +72,12 @@ fn main() {
     //     Err(e) => println!("Error : {}", e),
     // }
 
-    // match replicate.collection.get(String::from("audio-generation")) {
+    // match replicate.collections.get(String::from("audio-generation")) {
     //     Ok(result) => println!("Success : {:?}", result),
     //     Err(e) => println!("Error : {}", e),
     // }
 
-    // match replicate.collection.list() {
+    // match replicate.collections.list() {
     //     Ok(result) => println!("Success : {:?}", result),
     //     Err(e) => println!("Error : {}", e),
     // }

@@ -1,5 +1,5 @@
 //! Used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
-//! 
+//!
 //! The Collection struct is initialized with a Config struct.
 //!
 //! # Example
@@ -10,7 +10,7 @@
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //!
-//! match replicate.collection.get(String::from("audio-generation")) {
+//! match replicate.collections.get(String::from("audio-generation")) {
 //!     Ok(result) => println!("Success : {:?}", result),
 //!     Err(e) => println!("Error : {}", e),
 //! }
@@ -40,7 +40,7 @@ impl Collection {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.collection.get(String::from("audio-generation")) {
+    /// match replicate.collections.get(String::from("audio-generation")) {
     ///    Ok(result) => println!("Success : {:?}", result),
     ///   Err(e) => println!("Error : {}", e),
     /// }
@@ -76,7 +76,7 @@ impl Collection {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.collection.list() {
+    /// match replicate.collections.list() {
     ///   Ok(result) => println!("Success : {:?}", result),
     ///   Err(e) => println!("Error : {}", e),
     /// }
@@ -95,5 +95,89 @@ impl Collection {
         let response_struct: ListCollectionModels = serde_json::from_str(&response_string)?;
 
         Ok(response_struct)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{config::Config, Replicate};
+
+    use httpmock::{Method::GET, MockServer};
+    use serde_json::json;
+
+    #[test]
+    fn test_get() -> Result<(), Box<dyn std::error::Error>> {
+        let server = MockServer::start();
+
+        let get_mock = server.mock(|when, then| {
+            when.method(GET)
+                .path("/collections/super-resolution");
+            then.status(200).json_body_obj(&json!( {
+                "name": "Super resolution",
+                "slug": "super-resolution",
+                "description": "Upscaling models that create high-quality images from low-quality images.",
+                "models": [],
+              }));
+        });
+
+        let config = Config {
+            auth: String::from("test"),
+            base_url: server.base_url(),
+            ..Config::default()
+        };
+        let replicate = Replicate::new(config);
+
+        let result = replicate.collections.get(String::from("super-resolution"));
+
+        // Assert that the returned value is correct
+        assert_eq!(result?.name, "Super resolution");
+
+        // Ensure the mocks were called as expected
+        get_mock.assert();
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_list() -> Result<(), Box<dyn std::error::Error>> {
+        let server = MockServer::start();
+
+        let get_mock = server.mock(|when, then| {
+            when.method(GET)
+                .path("/collections");
+            then.status(200).json_body_obj(&json!( {
+                "results": [
+                  {
+                    "name": "Super resolution",
+                    "slug": "super-resolution",
+                    "description": "Upscaling models that create high-quality images from low-quality images.",
+                  },
+                  {
+                    "name": "Image classification",
+                    "slug": "image-classification",
+                    "description": "Models that classify images.",
+                  },
+                ],
+                "next": None::<String>,
+                "previous": None::<String>,
+              }));
+        });
+
+        let config = Config {
+            auth: String::from("test"),
+            base_url: server.base_url(),
+            ..Config::default()
+        };
+        let replicate = Replicate::new(config);
+
+        let result = replicate.collections.list()?;
+
+        // Assert that the returned value is correct
+        assert_eq!(result.results.len(), 2,);
+
+        // Ensure the mocks were called as expected
+        get_mock.assert();
+
+        Ok(())
     }
 }

@@ -87,3 +87,53 @@ impl Model {
         Ok(response_struct)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{config::Config, Replicate};
+
+    use httpmock::{Method::GET, MockServer};
+    use serde_json::json;
+
+    #[test]
+    fn test_get() -> Result<(), Box<dyn std::error::Error>> {
+        let server = MockServer::start();
+
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/models/replicate/hello-world");
+            then.status(200).json_body_obj(&json!( {
+                "url": "https://replicate.com/replicate/hello-world",
+                "owner": "replicate",
+                "name": "hello-world",
+                "description": "A tiny model that says hello",
+                "visibility": "public",
+                "github_url": "https://github.com/replicate/cog-examples",
+                "paper_url": None::<String>,
+                "license_url": None::<String>,
+                "run_count": 12345,
+                "cover_image_url": "",
+                "default_example": {},
+                "latest_version": {}
+            }
+            ));
+        });
+
+        let config = Config {
+            auth: String::from("test"),
+            base_url: server.base_url(),
+            ..Config::default()
+        };
+        let replicate = Replicate::new(config);
+
+        let result = replicate
+            .models
+            .get(String::from("replicate"), String::from("hello-world"))?;
+
+        println!("{:?}", result);
+
+        // Ensure the mocks were called as expected
+        get_mock.assert();
+
+        Ok(())
+    }
+}

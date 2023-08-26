@@ -7,8 +7,32 @@
 // Allow rustdoc::bare_urls for the whole module
 #![allow(rustdoc::bare_urls)]
 
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use std::collections::HashMap;
+
+/// If the object is empty, return None
+pub fn object_empty_as_none<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    for<'a> T: Deserialize<'a>,
+{
+    #[derive(Deserialize, Debug)]
+    #[serde(deny_unknown_fields)]
+    struct Empty {}
+
+    #[derive(Deserialize, Debug)]
+    #[serde(untagged)]
+    enum Aux<T> {
+        T(T),
+        Empty(Empty),
+        Null,
+    }
+
+    match Deserialize::deserialize(deserializer)? {
+        Aux::T(t) => Ok(Some(t)),
+        Aux::Empty(_) | Aux::Null => Ok(None),
+    }
+}
 
 /// GET https://api.replicate.com/v1/models/{model_owner}/{model_name}
 #[derive(Deserialize, Debug)]
@@ -28,8 +52,10 @@ pub struct GetModel {
 
     pub cover_image_url: Option<String>,
 
+    #[serde(deserialize_with = "object_empty_as_none")]
     pub default_example: Option<GetPrediction>,
 
+    #[serde(deserialize_with = "object_empty_as_none")]
     pub latest_version: Option<GetModelVersion>,
 }
 
@@ -243,7 +269,7 @@ pub enum PredictionSource {
 }
 
 /// Status of the prediction, either starting, processing, succeeded, failed or canceled
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum PredictionStatus {
     starting,
