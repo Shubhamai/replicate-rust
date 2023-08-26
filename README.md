@@ -7,7 +7,7 @@
 
 <!--[![codecov](https://codecov.io/gh/shubhamai/replicate-rust/branch/main/graph/badge.svg)](https://codecov.io/gh/shubhamai/replicate-rust)-->
 [![Documentation]][docs.rs] [![Latest Version]][crates.io]
-[![Tests](https://github.com/Shubhamai/replicate-rust/actions/workflows/tests.yml/badge.svg)](https://github.com/Shubhamai/replicate-rust/actions/workflows/tests.yml)
+[![Tests](https://github.com/Shubhamai/replicate-rust/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/Shubhamai/replicate-rust/actions/workflows/tests.yml)
 <a href="https://crates.io/crates/replicate-rust"><img src="https://img.shields.io/crates/d/replicate-rust"></a>
 [![Rust](https://img.shields.io/badge/rust-1.72%2B-blue.svg?maxAge=3600)](https://github.com/rust-lang/rust/blob/master/RELEASES.md#version-1720-2023-08-24)
 </div>
