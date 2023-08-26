@@ -43,7 +43,7 @@ export REPLICATE_API_TOKEN=<your token>
 Here's an example using `replicate_rust` to run a model. 
 
 ```rust
-use~ replicate_rust::{Replicate, config::Config};
+use replicate_rust::{Replicate, config::Config};
 
 let config = Config::default();
 let replicate = Replicate::new(config);
@@ -162,7 +162,7 @@ match replicate.predictions.list() {
 
 ---
 
-## Get model Information
+### Get model Information
 
 ```rust
 match replicate.models.get(String::from("replicate"), String::from("hello-world"))
@@ -225,6 +225,10 @@ match replicate.collections.list() {
 
 // Success : ListCollectionModels { ... }
 ```
+
+---
+
+
 
 
 [crates.io]: https://crates.io/crates/replicate-rust
