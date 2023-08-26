@@ -3,7 +3,9 @@
 //!
 //! The API responses are defined as structs that implement the `serde::Deserialize` trait.
 //!
-//!
+
+// Allow rustdoc::bare_urls for the whole module
+#![allow(rustdoc::bare_urls)]
 
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -42,6 +44,7 @@ pub struct GetCollectionModels {
     pub models: Vec<GetModel>,
 }
 
+/// Prediction urls to iether cancel or get the prediction
 #[derive(serde::Deserialize, Debug)]
 pub struct PredictionsUrls {
     pub cancel: String,
@@ -61,7 +64,7 @@ pub struct GetPrediction {
     pub urls: PredictionsUrls,
 
     pub created_at: String,
-    pub started_at: String,
+    pub started_at: Option<String>,
     pub completed_at: Option<String>,
 
     pub source: Option<PredictionSource>,
@@ -120,6 +123,7 @@ pub struct CreateTraining {
     pub completed_at: Option<String>,
 }
 
+/// POST https://api.replicate.com/v1/predictions
 #[derive(serde::Deserialize, Debug)]
 pub struct CreatePrediction {
     pub id: String,
@@ -149,6 +153,7 @@ pub struct GetModelVersion {
     pub openapi_schema: HashMap<String, serde_json::Value>,
 }
 
+/// Each item of the list of collections
 #[derive(Deserialize, Debug)]
 pub struct ListCollectionModelsItem {
     pub name: String,
@@ -165,6 +170,7 @@ pub struct ListCollectionModels {
     pub results: Vec<ListCollectionModelsItem>,
 }
 
+/// Represents a prediction in the list of predictions
 #[derive(serde::Deserialize, Debug)]
 pub struct PredictionsListItem {
     pub id: String,

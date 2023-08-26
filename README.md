@@ -41,9 +41,10 @@ export REPLICATE_API_TOKEN=<your token>
 Here's an example using `replicate_rust` to run a model. 
 
 ```rust
-use replicate_rust::Replicate;
+use replicate_rust::{Replicate, config::Config};
 
-let replicate = Replicate::new();
+let config = Config::default();
+let replicate = Replicate::new(config);
 
 // Construct the inputs.
 let mut inputs = std::collections::HashMap::new();
@@ -75,7 +76,8 @@ See the [reference docs](https://docs.rs/replicate-rust/) for detailed API docum
 You can start a model and run it in the background:
 
 ```rust
-let replicate = Replicate::new();
+let config = Config::default();
+let replicate = Replicate::new(config);
 
 // Construct the inputs.
 let mut inputs = std::collections::HashMap::new();
@@ -121,7 +123,8 @@ You can cancel a running prediction:
 
 ```rust
 
-let replicate = Replicate::new();
+let config = Config::default();
+let replicate = Replicate::new(config);
 
 // Construct the inputs.
 let mut inputs = std::collections::HashMap::new();

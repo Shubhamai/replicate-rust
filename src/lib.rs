@@ -1,14 +1,22 @@
-//! Rust Client for interacting with the [Replicate API](https://replicate.com/docs/api/).
+//! Rust Client for interacting with the [Replicate API](https://replicate.com/docs/api/). Provides a type-safe interface by deserializing API responses into Rust structs.
 //!
-//! ### Example
+//! ### Getting Started
+//!
+//! Add `replicate_rust` to your `Cargo.toml` file.
+//! ```toml
+//! [dependencies]
+//! replicate_rust = "0.0.2"
+//! ```
+//!
+//! ## Example
 //! In this example we will run a model that generates a caption for an image using the [Stable Diffusion](
 //! https://replicate.ai/stability-ai/stable-diffusion) model.
 //!
 //! ```
-//! use replicate_rust::Replicate;
+//! use replicate_rust::{Replicate, config::Config};
 //!
-//! // Create a new Replicate client.
-//! let replicate = Replicate::new()
+//! let config = Config::default();
+//! let replicate = Replicate::new(config);
 //!
 //! // Creating the inputs
 //! let mut inputs = std::collections::HashMap::new();
@@ -31,12 +39,13 @@ use std::collections::HashMap;
 
 use api_definitions::GetPrediction;
 use collection::Collection;
+use config::Config;
 use model::Model;
 use prediction::Prediction;
 use training::Training;
 
-pub mod client;
 pub mod collection;
+pub mod config;
 pub mod model;
 pub mod prediction;
 pub mod training;
@@ -47,34 +56,45 @@ pub mod prediction_client;
 pub mod retry;
 
 pub struct Replicate {
-    client: client::Client,
+    /// Holds a reference to a Config struct.
+    config: Config,
+
+    /// Holds a reference to a Prediction struct. Use to run inference given model inputs and version.
     pub predictions: Prediction,
+
+    /// Holds a reference to a Model struct. Use to get information about a model.
     pub models: Model,
+
+    /// Holds a reference to a Training struct. Use to create a new training run.
     pub training: Training,
+
+    /// Holds a reference to a Collection struct. Use to get and list model collections present in Replicate.
     pub collection: Collection,
 }
 
 /// Rust Client for interacting with the [Replicate API](https://replicate.com/docs/api/).
-///
 impl Replicate {
     /// Create a new Replicate client.
-    /// 
+    ///
     /// # Example
     /// ```
-    /// use replicate_rust::Replicate;
-    /// let replicate = Replicate::new();
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
     /// ```
-    pub fn new() -> Self {
-        let client = client::Client::new();
+    pub fn new(config: Config) -> Self {
+        // Check if auth is set.
+        config.check_auth();
 
         // TODO : Maybe reference instead of clone
-        let predictions = Prediction::new(client.clone());
-        let models = Model::new(client.clone());
-        let training = Training::new(client.clone());
-        let collection = Collection::new(client.clone());
+        let predictions = Prediction::new(config.clone());
+        let models = Model::new(config.clone());
+        let training = Training::new(config.clone());
+        let collection = Collection::new(config.clone());
 
         Self {
-            client,
+            config,
             predictions,
             models,
             training,
@@ -88,8 +108,10 @@ impl Replicate {
     /// * `inputs` - The inputs to the model in the form of a HashMap.
     /// # Example
     /// ```
-    /// use replicate_rust::Replicate;
-    /// let replicate = Replicate::new();
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
     ///
     /// // Construct the inputs.
     /// let mut inputs = std::collections::HashMap::new();
@@ -116,7 +138,7 @@ impl Replicate {
         inputs: HashMap<K, V>,
         // TODO : Perhaps not Box<dyn std::error::Error> but something more specific?
     ) -> Result<GetPrediction, Box<dyn std::error::Error>> {
-        let prediction = Prediction::new(self.client.clone()).create(version, inputs);
+        let prediction = Prediction::new(self.config.clone()).create(version, inputs);
 
         prediction.wait()
     }

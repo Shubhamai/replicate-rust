@@ -1,20 +1,14 @@
 //! Used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
-//!
-//! The Collection struct is used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
-//!
-//! The Collection struct is initialized with a Client struct.
-//!
-//! The Collection struct has two methods:
-//!     
-//!   - `get`
-//!   - `list`
+//! 
+//! The Collection struct is initialized with a Config struct.
 //!
 //! # Example
 //!
 //! ```
-//! use replicate_rust::Replicate;
+//! use replicate_rust::{Replicate, config::Config};
 //!
-//! let replicate = Replicate::new();
+//! let config = Config::default();
+//! let replicate = Replicate::new(config);
 //!
 //! match replicate.collection.get(String::from("audio-generation")) {
 //!     Ok(result) => println!("Success : {:?}", result),
@@ -26,15 +20,31 @@
 use crate::api_definitions::{GetCollectionModels, ListCollectionModels};
 
 pub struct Collection {
-    // Holds a reference to a Replicate
-    pub parent: crate::client::Client,
+    /// Holds a reference to a Config struct, which contains the base url,  auth token among other settings.
+    pub parent: crate::config::Config,
 }
 
 impl Collection {
-    pub fn new(rep: crate::client::Client) -> Self {
+    /// Create a new Collection struct.
+    pub fn new(rep: crate::config::Config) -> Self {
         Self { parent: rep }
     }
 
+    /// Get a collection by slug.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    ///
+    /// match replicate.collection.get(String::from("audio-generation")) {
+    ///    Ok(result) => println!("Success : {:?}", result),
+    ///   Err(e) => println!("Error : {}", e),
+    /// }
+    /// ```
     pub fn get(
         &self,
         collection_slug: String,
@@ -56,6 +66,22 @@ impl Collection {
         Ok(response_struct)
     }
 
+    /// List all collections present in Replicate.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    ///
+    /// match replicate.collection.list() {
+    ///   Ok(result) => println!("Success : {:?}", result),
+    ///   Err(e) => println!("Error : {}", e),
+    /// }
+    /// ```
+    ///
     pub fn list(&self) -> Result<ListCollectionModels, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 

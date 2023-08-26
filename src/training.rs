@@ -32,11 +32,11 @@ pub struct CreateTrainingPayload {
 // #[derive(Clone)]
 pub struct Training {
     // Holds a reference to a Replicate
-    pub parent: crate::client::Client,
+    pub parent: crate::config::Config,
 }
 
 impl Training {
-    pub fn new(rep: crate::client::Client) -> Self {
+    pub fn new(rep: crate::config::Config) -> Self {
         Self { parent: rep }
     }
 

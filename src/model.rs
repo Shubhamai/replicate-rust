@@ -9,11 +9,10 @@
 //!
 //! # Example
 //! ```
-//! use replicate_rust::Replicate;
-//! let replicate = Replicate::new();
+//! use replicate_rust::{Replicate, config::Config};
 //!
-//! // Run the model and wait for the result in a blocking manner.
-//! let result = replicate.run(version, inputs);
+//! let config = Config::default();
+//! let replicate = Replicate::new(config);
 //!
 //! match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
 //!    Ok(result) => println!("Success : {:?}", result),
@@ -26,7 +25,7 @@ use crate::{api_definitions::GetModel, version::Version};
 // #[derive(Clone)]
 pub struct Model {
     // Holds a reference to a Replicate
-    pub parent: crate::client::Client,
+    pub parent: crate::config::Config,
     pub versions: Version,
 }
 
@@ -40,9 +39,9 @@ pub struct Model {
 impl Model {
     /// Create a new Model struct.
     /// # Arguments
-    /// * `rep` - The client (`crate::client::Client`) to use for authentication and communication.
+    /// * `rep` - The config (`crate::config::Config`) to use for authentication and communication.
     ///
-    pub fn new(rep: crate::client::Client) -> Self {
+    pub fn new(rep: crate::config::Config) -> Self {
         let versions = Version::new(rep.clone());
         Self {
             parent: rep,
@@ -57,8 +56,10 @@ impl Model {
     ///
     /// # Example
     /// ```
-    /// use replicate_rust::Replicate;
-    /// let replicate = Replicate::new();
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
     ///
     /// match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
     ///    Ok(result) => println!("Success : {:?}", result),

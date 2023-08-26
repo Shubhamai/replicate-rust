@@ -1,13 +1,23 @@
-use replicate_rust::Replicate;
+use replicate_rust::{config::Config, Replicate};
 
 fn main() {
-    let replicate = Replicate::new();
+    let config = Config::default();
+    let replicate = Replicate::new(config);
 
-    // Construct the inputs.
+    // Creating the inputs
     let mut inputs = std::collections::HashMap::new();
     inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
     let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+
+    // Run the model.
+    let result = replicate.run(version, inputs);
+
+    // Print the result
+    match result {
+        Ok(result) => println!("Success : {:?}", result.output),
+        Err(e) => println!("Error : {}", e),
+    }
 
     // Run the model.
     // let result = replicate.run(version, inputs);
@@ -31,10 +41,10 @@ fn main() {
     //     Err(e) => println!("Error : {}", e),
     // }
 
-    match replicate.predictions.list() {
-        Ok(result) => println!("Success : {:?}", result),
-        Err(e) => println!("Error : {}", e),
-    }
+    // match replicate.predictions.list() {
+    //     Ok(result) => println!("Success : {:?}", result),
+    //     Err(e) => println!("Error : {}", e),
+    // }
 
     // match replicate
     //     .models

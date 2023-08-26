@@ -1,4 +1,35 @@
 //! Helper struct for the prediction struct
+//!
+//! Used to create a prediction, reload for latest info, cancel it and wait for prediction to complete.
+//!
+//! # Example
+//! ```
+//! use replicate_rust::{Replicate, config::Config};
+//!
+//! let config = Config::default();
+//! let replicate = Replicate::new(config);
+//!
+//! // Creating the inputs
+//! let mut inputs = std::collections::HashMap::new();
+//! inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+//!
+//! let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+//!
+//! // Create a new prediction
+//! let mut prediction = replicate.predictions.create(version, inputs);
+//!
+//! // Reload the prediction to get the latest info and logs
+//! prediction.reload().unwrap();
+//!
+//! // Cancel the prediction
+//! // prediction.cancel().unwrap();
+//!
+//! // Wait for the prediction to complete
+//! let result = prediction.wait().unwrap();
+//!
+//! println!("Result : {:?}", result);
+//!
+//! ```
 
 use std::collections::HashMap;
 
@@ -9,7 +40,7 @@ use crate::{
 
 use super::retry::{RetryPolicy, RetryStrategy};
 
-///Parse a model version string into its model and version parts.
+/// Parse a model version string into its model and version parts.
 pub fn parse_version(s: &str) -> Option<(&str, &str)> {
     // Split the string at the colon.
     let mut parts = s.splitn(2, ':');
@@ -26,10 +57,10 @@ pub fn parse_version(s: &str) -> Option<(&str, &str)> {
     Some((model, version))
 }
 
-/// Helper struct for the prediction struct
+/// Helper struct for the Prediction struct. Used to create a prediction, reload for latest info, cancel it and wait for prediction to complete.
 pub struct PredictionClient {
     // Holds a reference to a Replicate
-    pub parent: crate::client::Client,
+    pub parent: crate::config::Config,
 
     // Unique identifier of the prediction
     // id: String,
@@ -51,9 +82,25 @@ pub struct PredictionClient {
 
 impl PredictionClient {
     /// Run the prediction of the model version with the given input
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    ///
+    /// // Creating the inputs
+    /// let mut inputs = std::collections::HashMap::new();
+    /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+    ///
+    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    ///
+    /// // Create a new prediction
+    /// let mut prediction = replicate.predictions.create(version, inputs);
+    ///
+    /// ```
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
-        // &mut self,
-        rep: crate::client::Client,
+        rep: crate::config::Config,
         version: String,
         inputs: HashMap<K, V>,
     ) -> Result<PredictionClient, Box<dyn std::error::Error>> {
@@ -96,6 +143,28 @@ impl PredictionClient {
     }
 
     /// Returns the latest info of the prediction
+    // # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    ///
+    /// // Creating the inputs
+    /// let mut inputs = std::collections::HashMap::new();
+    /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+    ///
+    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    ///
+    /// // Create a new prediction
+    /// let mut prediction = replicate.predictions.create(version, inputs);
+    ///
+    /// // Reload the prediction to get the latest info and logs
+    /// prediction.reload().unwrap();
+    ///
+    /// println!("Prediction : {:?}", prediction.status);
+    ///
+    /// ```
     pub fn reload(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -122,6 +191,31 @@ impl PredictionClient {
     }
 
     /// Cancel the prediction
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    ///
+    /// // Creating the inputs
+    /// let mut inputs = std::collections::HashMap::new();
+    /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+    ///
+    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    ///
+    /// // Create a new prediction
+    /// let mut prediction = replicate.predictions.create(version, inputs);
+    ///
+    /// // Cancel the prediction
+    /// prediction.cancel().unwrap();
+    ///
+    /// // Wait for the prediction to complete (or fail).
+    /// let result = prediction.wait().unwrap();
+    ///
+    /// println!("Result : {:?}", result);
+    ///
+    /// ```
     pub fn cancel(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
         client
@@ -139,6 +233,29 @@ impl PredictionClient {
     }
 
     /// Blocks until the predictions are ready and returns the predictions
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    ///
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    ///
+    /// // Creating the inputs
+    /// let mut inputs = std::collections::HashMap::new();
+    /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+    ///
+    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    ///
+    /// // Create a new prediction
+    /// let mut prediction = replicate.predictions.create(version, inputs);
+    ///
+    /// // Wait for the prediction to complete (or fail).
+    /// let result = prediction.wait().unwrap();
+    ///
+    /// println!("Result : {:?}", result);
+    ///
+    ///
+    /// ```
     pub fn wait(self) -> Result<GetPrediction, Box<dyn std::error::Error>> {
         // TODO : Implement a retry policy
         let retry_policy = RetryPolicy::new(5, RetryStrategy::FixedDelay(1000));
