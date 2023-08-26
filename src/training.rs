@@ -79,7 +79,7 @@ impl Training {
     /// 
     /// # Example
     /// ```
-    /// use replicate_rust::{Replicate, config::Config};
+    /// use replicate_rust::{Replicate, config::Config, training::TrainingOptions};
     /// 
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
@@ -97,6 +97,9 @@ impl Training {
     ///     webhook: String::from("https://example.com/my-webhook"),
     ///     _webhook_events_filter: None,
     /// },
+    /// );
+    /// ```
+    /// 
     pub fn create(
         &self,
         model_owner: String,

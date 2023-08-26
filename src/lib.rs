@@ -5,7 +5,7 @@
 //! Add `replicate_rust` to your `Cargo.toml` file.
 //! ```toml
 //! [dependencies]
-//! replicate_rust = "0.0.2"
+//! replicate_rust = "0.0.3"
 //! ```
 //!
 //! ## Example
