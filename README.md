@@ -2,7 +2,7 @@
 <h1>Replicate Rust client</h1>
 </div>
 
-<p align="center">An Unofficial Rust client for <a href="https://replicate.com">Replicate</a> with built-in deserialization to Rust structs 
+<p align="center">An Unofficial Rust client for <a href="https://replicate.com">Replicate</a>
 <div align="center">
 
 <!--[![codecov](https://codecov.io/gh/shubhamai/replicate-rust/branch/main/graph/badge.svg)](https://codecov.io/gh/shubhamai/replicate-rust)-->
@@ -23,6 +23,9 @@
 
 </p>
 
+---
+
+> An Unofficial Rust client for <a href="https://replicate.com">Replicate</a>. Provides a type-safe interface by deserializing API responses into Rust structs. 
 
 ## Getting Started
 
