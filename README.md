@@ -60,6 +60,7 @@ match result {
     Err(e) => println!("Error : {}", e),
 }
 // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
+```
 
 ## Usage
 
