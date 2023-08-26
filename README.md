@@ -23,21 +23,22 @@
 
 </p>
 
-## Install
 
-```sh
-cargo add replicate_rust
+## Getting Started
+
+Add `replicate_rust` to `Cargo.toml`:
+
+```toml
+replicate-rust = "0.0.2"
 ```
-
-## Authenticate
 
 Grab your token from [replicate.com/account](https://replicate.com/account) and set it as an environment variable:
 
-```
+```sh
 export REPLICATE_API_TOKEN=<your token>
 ```
 
-## Run a model
+Here's an example using `replicate_rust` to run a model. 
 
 ```rust
 use replicate_rust::Replicate;
@@ -58,9 +59,15 @@ match result {
     Ok(result) => println!("Success : {:?}", result.output),
     Err(e) => println!("Error : {}", e),
 }
-// Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])
-```
+// Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
 
+## Usage
+
+See the [reference docs](https://docs.rs/replicate-rust/) for detailed API documentation.
+
+---
+
+## Examples
 
 ## Run a model in the background
 
