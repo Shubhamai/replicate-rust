@@ -126,7 +126,6 @@ impl PredictionClient {
 
             Ok(Self {
                 parent: rep,
-                // TODO : Need to do this better
                 id: result.id,
                 version: result.version,
                 urls: result.urls,
@@ -177,7 +176,6 @@ impl PredictionClient {
         let response_string = response.text()?;
         let response_struct: GetPrediction = serde_json::from_str(&response_string)?;
 
-        // TODO : Need to make this cleaner
         self.id = response_struct.id;
         self.version = response_struct.version;
         self.urls = response_struct.urls;

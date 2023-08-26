@@ -3,7 +3,28 @@
 //!
 //! # Example
 //!
-//! TODO
+//! ```
+//! use replicate_rust::{Replicate, config::Config};
+//!
+//! let config = Config::default();
+//! let replicate = Replicate::new(config);
+//! 
+//! let mut input = HashMap::new();
+//! input.insert(String::from("train_data"), String::from("https://example.com/70k_samples.jsonl"));
+//!
+//! let result = replicate.trainings.create(
+//!     String::from("owner"),
+//!     String::from("model"),
+//!     String::from("632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532"),
+//!     TrainingOptions {
+//!         destination: String::from("{new_owner}/{new_name}"),
+//!         input,
+//!         webhook: String::from("https://example.com/my-webhook"),
+//!         _webhook_events_filter: None,
+//!     },
+//! );
+//!
+//! ```
 //!
 //!
 
@@ -11,6 +32,7 @@ use std::collections::HashMap;
 
 use crate::api_definitions::{CreateTraining, GetTraining, ListTraining, WebhookEvents};
 
+/// Contains all the options for creating a training.
 pub struct TrainingOptions {
     pub destination: String,
 
@@ -20,6 +42,8 @@ pub struct TrainingOptions {
     _webhook_events_filter: Option<WebhookEvents>,
 }
 
+
+/// Data to be sent to the API when creating a training.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct CreateTrainingPayload {
     pub destination: String,
@@ -35,11 +59,44 @@ pub struct Training {
     pub parent: crate::config::Config,
 }
 
+/// Training struct contains all the functionality for interacting with the training endpoints of the Replicate API.
 impl Training {
     pub fn new(rep: crate::config::Config) -> Self {
         Self { parent: rep }
     }
 
+    /// Create a new training.
+    /// 
+    /// # Arguments
+    /// * `model_owner` - The name of the user or organization that owns the model.
+    /// * `model_name` - The name of the model.
+    /// * `version_id` - The ID of the version.
+    /// * `options` - The options for creating a training.
+    ///     * `destination` - A string representing the desired model to push to in the format {destination_model_owner}/{destination_model_name}. This should be an existing model owned by the user or organization making the API request. If the destination is invalid, the server returns an appropriate 4XX response.
+    ///    * `input` - An object containing inputs to the Cog model's train() function.
+    ///   * `webhook` - An HTTPS URL for receiving a webhook when the training completes. The webhook will be a POST request where the request body is the same as the response body of the get training operation. If there are network problems, we will retry the webhook a few times, so make sure it can be safely called more than once.
+    ///  * `_webhook_events_filter` - TO only send specifc events to the webhook, use this field. If not specified, all events will be sent. The following events are supported:
+    /// 
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    /// 
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    /// 
+    /// let mut input = HashMap::new();
+    /// input.insert(String::from("training_data"), String::from("https://example.com/70k_samples.jsonl"));
+    /// 
+    /// let result = replicate.trainings.create(
+    ///    String::from("owner"),
+    ///    String::from("model"),
+    ///   String::from("632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532"),
+    ///  TrainingOptions {
+    ///     destination: String::from({new_owner}/{new_name}),
+    ///     input,
+    ///     webhook: String::from("https://example.com/my-webhook"),
+    ///     _webhook_events_filter: None,
+    /// },
     pub fn create(
         &self,
         model_owner: String,
@@ -71,6 +128,24 @@ impl Training {
         Ok(response_struct)
     }
 
+
+    /// Get the details of a training.
+    /// 
+    /// # Arguments
+    /// * `training_id` - The ID of the training you want to get.
+    /// 
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    /// 
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    /// 
+    /// match replicate.trainings.get(String::from("zz4ibbonubfz7carwiefibzgga")) {
+    ///   Ok(result) => println!("Success : {:?}", result),
+    ///   Err(e) => println!("Error : {}", e),
+    /// };
+    /// ``` 
     pub fn get(&self, training_id: String) -> Result<GetTraining, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -89,6 +164,20 @@ impl Training {
         Ok(response_struct)
     }
 
+    /// Get a paginated list of trainings that you've created with your account. Returns 100 records per page.
+    /// 
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    /// 
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    /// 
+    /// match replicate.trainings.list() {
+    ///     Ok(result) => println!("Success : {:?}", result),
+    ///     Err(e) => println!("Error : {}", e),
+    /// };
+    /// ```
     pub fn list(&self) -> Result<ListTraining, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -104,7 +193,23 @@ impl Training {
         Ok(response_struct)
     }
 
-    // Perhaps the training_id should be automatically derives, just like prediction one
+    /// Cancel a training.
+    /// 
+    /// # Arguments
+    /// * `training_id` - The ID of the training you want to cancel.
+    /// 
+    /// # Example
+    /// ```
+    /// use replicate_rust::{Replicate, config::Config};
+    /// 
+    /// let config = Config::default();
+    /// let replicate = Replicate::new(config);
+    /// 
+    /// match replicate.trainings.cancel(String::from("zz4ibbonubfz7carwiefibzgga")) {
+    ///     Ok(result) => println!("Success : {:?}", result),
+    ///    Err(e) => println!("Error : {}", e),
+    /// };
+    /// ```
     pub fn cancel(&self, training_id: String) -> Result<GetTraining, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 

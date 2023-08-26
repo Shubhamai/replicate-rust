@@ -102,7 +102,6 @@ pub struct GetPrediction {
     pub input: HashMap<String, serde_json::Value>,
 
     // Either a vector of string or a simple string
-    // TODO : previous it was a Option<String>
     pub output: Option<serde_json::Value>,
 
     pub error: Option<String>,
