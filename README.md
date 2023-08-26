@@ -70,7 +70,7 @@ See the [reference docs](https://docs.rs/replicate-rust/) for detailed API docum
 
 ## Examples
 
-## Run a model in the background
+### Run a model in the background
 
 You can start a model and run it in the background:
 
@@ -115,7 +115,7 @@ match prediction.wait() {
 ```
 
 
-## Cancel a prediction
+### Cancel a prediction
 
 You can cancel a running prediction:
 
@@ -143,7 +143,7 @@ println!("{}", prediction.status)
 // 'cancelled'
 ```
 
-## List predictions
+### List predictions
 
 You can list all the predictions you've run:
 
@@ -169,7 +169,7 @@ match replicate.models.get(String::from("replicate"), String::from("hello-world"
 // Success : GetModel { ... }
 ```
 
-## Get Versions List
+### Get Versions List
 
 ```rust
 match replicate
@@ -183,7 +183,7 @@ match replicate
 // Success : ListModelVersions { ... }
 ``````
 
-## Get Model Version Information
+### Get Model Version Information
 
 ```rust
 match replicate.models.versions.get(
@@ -199,7 +199,7 @@ match replicate.models.versions.get(
 
 ---
 
-## Get Collection Information
+### Get Collection Information
 
 ```rust
 match replicate.collection.get(String::from("audio-generation")) {
@@ -210,7 +210,7 @@ match replicate.collection.get(String::from("audio-generation")) {
 // Success : GetCollectionModels { ... }
 ```
 
-## Get Collection Lists
+### Get Collection Lists
 
 ```rust
 match replicate.collection.list() {
