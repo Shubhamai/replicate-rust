@@ -23,15 +23,15 @@
 //!         webhook: String::from("https://example.com/my-webhook"),
 //!         _webhook_events_filter: None,
 //!     },
-//! );
-//!
+//! )?;
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 //!
 //!
 
 use std::collections::HashMap;
 
-use crate::api_definitions::{CreateTraining, GetTraining, ListTraining, WebhookEvents};
+use crate::{api_definitions::{CreateTraining, GetTraining, ListTraining, WebhookEvents}, errors::ReplicateError};
 
 /// Contains all the options for creating a training.
 pub struct TrainingOptions {
@@ -112,7 +112,9 @@ impl Training {
     ///     webhook: String::from("https://example.com/my-webhook"),
     ///     _webhook_events_filter: None,
     /// },
-    /// );
+    /// )?;
+    /// 
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
     /// 
     pub fn create(
@@ -121,7 +123,7 @@ impl Training {
         model_name: &str,
         version_id: &str,
         options: TrainingOptions,
-    ) -> Result<CreateTraining, Box<dyn std::error::Error>> {
+    ) -> Result<CreateTraining, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let payload = CreateTrainingPayload {
@@ -138,7 +140,11 @@ impl Training {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .json(&payload)
-            .send()?;
+                .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: CreateTraining = serde_json::from_str(&response_string)?;
@@ -159,12 +165,12 @@ impl Training {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     /// 
-    /// match replicate.trainings.get("zz4ibbonubfz7carwiefibzgga") {
-    ///   Ok(result) => println!("Success : {:?}", result),
-    ///   Err(e) => println!("Error : {}", e),
-    /// };
+    /// let training = replicate.trainings.get("zz4ibbonubfz7carwiefibzgga")?;
+    /// println!("Training : {:?}", training);
+    /// 
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ``` 
-    pub fn get(&self, training_id: &str) -> Result<GetTraining, Box<dyn std::error::Error>> {
+    pub fn get(&self, training_id: &str) -> Result<GetTraining, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -174,7 +180,11 @@ impl Training {
             ))
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
-            .send()?;
+                .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: GetTraining = serde_json::from_str(&response_string)?;
@@ -191,19 +201,23 @@ impl Training {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     /// 
-    /// match replicate.trainings.list() {
-    ///     Ok(result) => println!("Success : {:?}", result),
-    ///     Err(e) => println!("Error : {}", e),
-    /// };
+    /// let trainings = replicate.trainings.list()?;
+    /// println!("Trainings : {:?}", trainings);
+    /// 
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn list(&self) -> Result<ListTraining, Box<dyn std::error::Error>> {
+    pub fn list(&self) -> Result<ListTraining, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
             .get(format!("{}/trainings", self.parent.base_url,))
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
-            .send()?;
+                .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: ListTraining = serde_json::from_str(&response_string)?;
@@ -223,12 +237,12 @@ impl Training {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     /// 
-    /// match replicate.trainings.cancel("zz4ibbonubfz7carwiefibzgga") {
-    ///     Ok(result) => println!("Success : {:?}", result),
-    ///    Err(e) => println!("Error : {}", e),
-    /// };
+    /// let result =  replicate.trainings.cancel("zz4ibbonubfz7carwiefibzgga")?;
+    /// println!("Result : {:?}", result);
+    /// 
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn cancel(&self, training_id: &str) -> Result<GetTraining, Box<dyn std::error::Error>> {
+    pub fn cancel(&self, training_id: &str) -> Result<GetTraining, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -238,7 +252,11 @@ impl Training {
             ))
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
-            .send()?;
+                .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
         let response_string = response.text()?;
         let response_struct: GetTraining = serde_json::from_str(&response_string)?;
 
@@ -258,7 +276,7 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn test_create() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_create() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let post_mock = server.mock(|when, then| {
@@ -310,7 +328,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_get() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
@@ -356,7 +374,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cancel() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_cancel() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
@@ -402,7 +420,7 @@ mod tests {
     }
 
     #[test]
-    fn test_list() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_list() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {

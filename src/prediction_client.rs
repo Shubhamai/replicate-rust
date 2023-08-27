@@ -16,25 +16,26 @@
 //! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Create a new prediction
-//! let mut prediction = replicate.predictions.create(version, inputs);
+//! let mut prediction = replicate.predictions.create(version, inputs)?;
 //!
 //! // Reload the prediction to get the latest info and logs
-//! prediction.reload().unwrap();
+//! prediction.reload()?;
 //!
 //! // Cancel the prediction
-//! // prediction.cancel().unwrap();
+//! // prediction.cancel()?;
 //!
 //! // Wait for the prediction to complete
-//! let result = prediction.wait().unwrap();
+//! let result = prediction.wait()?;
 //!
 //! println!("Result : {:?}", result);
-//!
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 
 use std::collections::HashMap;
 
 use crate::{
     api_definitions::{CreatePrediction, GetPrediction, PredictionStatus, PredictionsUrls},
+    errors::ReplicateError,
     prediction::PredictionPayload,
 };
 
@@ -97,16 +98,19 @@ impl PredictionClient {
     /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
-    /// let mut prediction = replicate.predictions.create(version, inputs);
-    ///
+    /// let mut prediction = replicate.predictions.create(version, inputs)?;
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
         rep: crate::config::Config,
         version: &str,
         inputs: HashMap<K, V>,
-    ) -> Result<PredictionClient, Box<dyn std::error::Error>> {
+    ) -> Result<PredictionClient, ReplicateError> {
         // Parse the model version string.
-        let (_model, version) = parse_version(&version).unwrap();
+        let (_model, version) = match parse_version(version) {
+            Some((model, version)) => (model, version),
+            None => return Err(ReplicateError::InvalidVersionString(version.to_string())),
+        };
 
         // Construct the request payload
         let payload = PredictionPayload {
@@ -114,6 +118,7 @@ impl PredictionClient {
             input: inputs,
         };
 
+        // println!("Payload : {:?}", &payload);
         let client = reqwest::blocking::Client::new();
         let response = client
             .post(format!("{}/predictions", rep.base_url))
@@ -122,24 +127,29 @@ impl PredictionClient {
             .json(&payload)
             .send()?;
 
-        if response.status().is_success() {
-            let result: CreatePrediction = response.json()?;
-
-            Ok(Self {
-                parent: rep,
-                id: result.id,
-                version: result.version,
-                urls: result.urls,
-                created_at: result.created_at,
-                status: result.status,
-                input: result.input,
-                error: result.error,
-                logs: result.logs,
-            })
-        } else {
-            let error_message = response.text()?;
-            Err(error_message.into())
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
         }
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
+
+        // println!("Response : {:?}", response.text()?);
+
+        let result: CreatePrediction = response.json()?;
+
+        Ok(Self {
+            parent: rep,
+            id: result.id,
+            version: result.version,
+            urls: result.urls,
+            created_at: result.created_at,
+            status: result.status,
+            input: result.input,
+            error: result.error,
+            logs: result.logs,
+        })
     }
 
     /// Returns the latest info of the prediction
@@ -157,15 +167,15 @@ impl PredictionClient {
     /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
-    /// let mut prediction = replicate.predictions.create(version, inputs);
+    /// let mut prediction = replicate.predictions.create(version, inputs)?;
     ///
     /// // Reload the prediction to get the latest info and logs
-    /// prediction.reload().unwrap();
+    /// prediction.reload()?;
     ///
     /// println!("Prediction : {:?}", prediction.status);
-    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn reload(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn reload(&mut self) -> Result<(), ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -173,6 +183,10 @@ impl PredictionClient {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: GetPrediction = serde_json::from_str(&response_string)?;
@@ -204,20 +218,20 @@ impl PredictionClient {
     /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
-    /// let mut prediction = replicate.predictions.create(version, inputs);
+    /// let mut prediction = replicate.predictions.create(version, inputs)?;
     ///
     /// // Cancel the prediction
-    /// prediction.cancel().unwrap();
+    /// prediction.cancel()?;
     ///
     /// // Wait for the prediction to complete (or fail).
-    /// let result = prediction.wait().unwrap();
+    /// let result = prediction.wait()?;
     ///
     /// println!("Result : {:?}", result);
-    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn cancel(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn cancel(&mut self) -> Result<(), ReplicateError> {
         let client = reqwest::blocking::Client::new();
-        client
+        let response = client
             .post(format!(
                 "{}/predictions/{}/cancel",
                 self.parent.base_url, self.id
@@ -225,6 +239,10 @@ impl PredictionClient {
             .header("Authorization", format!("Token {}", &self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         self.reload()?;
 
@@ -246,16 +264,16 @@ impl PredictionClient {
     /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
-    /// let mut prediction = replicate.predictions.create(version, inputs);
+    /// let mut prediction = replicate.predictions.create(version, inputs)?;
     ///
     /// // Wait for the prediction to complete (or fail).
-    /// let result = prediction.wait().unwrap();
+    /// let result = prediction.wait()?;
     ///
     /// println!("Result : {:?}", result);
     ///
-    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn wait(&self) -> Result<GetPrediction, Box<dyn std::error::Error>> {
+    pub fn wait(&self) -> Result<GetPrediction, ReplicateError> {
         // TODO : Implement a retry policy
         let retry_policy = RetryPolicy::new(5, RetryStrategy::FixedDelay(1000));
         let client = reqwest::blocking::Client::new();
@@ -266,6 +284,10 @@ impl PredictionClient {
                 .header("Authorization", format!("Token {}", self.parent.auth))
                 .header("User-Agent", &self.parent.user_agent)
                 .send()?;
+
+            if !response.status().is_success() {
+                return Err(ReplicateError::ResponseError(response.text()?));
+            }
 
             let response_string = response.text()?;
             let response_struct: GetPrediction = serde_json::from_str(&response_string)?;
@@ -295,7 +317,7 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn test_create() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_create() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let post_mock = server.mock(|when, then| {
@@ -337,7 +359,7 @@ mod tests {
         let result = replicate.predictions.create(
             "owner/model:632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
             input,
-        );
+        )?;
         assert_eq!(result.id, "ufawqhfynnddngldkgtslldrkq");
 
         // Ensure the mocks were called as expected

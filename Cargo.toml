@@ -14,6 +14,7 @@ authors = ["Shubhamai"]
 reqwest = {version = "0.11.20", features = ["json", "blocking"]}
 serde = {version = "1.0.186", features = ["derive"]}
 serde_json = "1.0.105"
+thiserror = "1.0.47"
 
 [dev-dependencies]
 httpmock = "0.6"

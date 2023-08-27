@@ -44,7 +44,10 @@ impl Default for Config {
     /// Create a new Config struct with the default values.
     fn default() -> Self {
         Self {
-            auth: std::env::var("REPLICATE_API_TOKEN").unwrap_or_else(|_| String::new()),
+            auth: match std::env::var("REPLICATE_API_TOKEN") {
+                Ok(token) => token,
+                Err(_) => String::new(),
+            },
             user_agent: format!("replicate-rust/{}", env!("CARGO_PKG_VERSION")),
             base_url: String::from("https://api.replicate.com/v1"),
         }

@@ -14,13 +14,12 @@
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //!
-//! match replicate.models.get("replicate", "hello-world") {
-//!    Ok(result) => println!("Success : {:?}", result),
-//!   Err(e) => println!("Error : {}", e),
-//! };
+//! let model = replicate.models.get("replicate", "hello-world")?;
+//! println!("Model : {:?}", model);
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 
-use crate::{api_definitions::GetModel, version::Version};
+use crate::{api_definitions::GetModel, errors::ReplicateError, version::Version};
 
 // #[derive(Clone)]
 /// Used to interact with the [Model Endpoints](https://replicate.com/docs/reference/http#models.get).
@@ -65,15 +64,12 @@ impl Model {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.models.get("replicate", "hello-world") {
-    ///    Ok(result) => println!("Success : {:?}", result),
-    ///    Err(e) => println!("Error : {}", e),
-    /// };
-    pub fn get(
-        &self,
-        model_owner: &str,
-        model_name: &str,
-    ) -> Result<GetModel, Box<dyn std::error::Error>> {
+    /// let model = replicate.models.get("replicate", "hello-world")?;
+    /// println!("Model : {:?}", model);
+    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
+    /// ```
+    pub fn get(&self, model_owner: &str, model_name: &str) -> Result<GetModel, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -85,6 +81,10 @@ impl Model {
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
 
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
+
         let response_string = response.text()?;
         let response_struct: GetModel = serde_json::from_str(&response_string)?;
 
@@ -94,13 +94,13 @@ impl Model {
 
 #[cfg(test)]
 mod tests {
-    use crate::{config::Config, Replicate};
+    use crate::{config::Config, errors::ReplicateError, Replicate};
 
     use httpmock::{Method::GET, MockServer};
     use serde_json::json;
 
     #[test]
-    fn test_get() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_get() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
@@ -129,9 +129,7 @@ mod tests {
         };
         let replicate = Replicate::new(config);
 
-        let result = replicate
-            .models
-            .get("replicate", "hello-world")?;
+        let result = replicate.models.get("replicate", "hello-world")?;
 
         println!("{:?}", result);
 

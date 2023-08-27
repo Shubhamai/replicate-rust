@@ -43,9 +43,9 @@ export REPLICATE_API_TOKEN=<your token>
 Here's an example using `replicate_rust` to run a model. 
 
 ```rust
-use replicate_rust::{config::Config, Replicate};
+use replicate_rust::{config::Config, Replicate, errors::ReplicateError};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), ReplicateError> {
     let config = Config::default();
     // Instead of using the default config ( which reads API token from env variable), you can also set the token directly:
     // let config = Config {
@@ -70,7 +70,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
 ```
 
 ## Usage
@@ -86,9 +85,6 @@ See the [reference docs](https://docs.rs/replicate-rust/) for detailed API docum
 You can start a model and run it in the background:
 
 ```rust
-let config = Config::default();
-let replicate = Replicate::new(config);
-
 // Construct the inputs.
 let mut inputs = std::collections::HashMap::new();
 inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
@@ -96,7 +92,7 @@ inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
 // Run the model.
-let mut prediction = replicate.predictions.create(version, inputs);
+let mut prediction = replicate.predictions.create(version, inputs)?;
 
 println!("{:?}", prediction.status);
 // 'starting'
@@ -127,9 +123,6 @@ println!("{:?}", prediction.output);
 You can cancel a running prediction:
 
 ```rust
-let config = Config::default();
-let replicate = Replicate::new(config);
-
 // Construct the inputs.
 let mut inputs = std::collections::HashMap::new();
 inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
@@ -137,7 +130,7 @@ inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
 // Run the model.
-let mut prediction = replicate.predictions.create(version, inputs);
+let mut prediction = replicate.predictions.create(version, inputs)?;
 
 println!("{:?}", prediction.status);
 // 'starting'
@@ -155,10 +148,8 @@ println!("{:?}", prediction.status);
 You can list all the predictions you've run:
 
 ```rust
-match replicate.predictions.list() {
-    Ok(result) => println!("Success : {:?}", result),
-    Err(e) => println!("Error : {}", e),
-}
+let predictions = replicate.predictions.list()?;
+println!("{:?}", predictions);
 // Success : ListPredictions { ... }
 ```
 
@@ -167,40 +158,26 @@ match replicate.predictions.list() {
 ### Get model Information
 
 ```rust
-match replicate.models.get("replicate", "hello-world")
-    {
-        Ok(result) => println!("Success : {:?}", result),
-        Err(e) => println!("Error : {}", e),
-};
-
+let model = replicate.models.get("replicate", "hello-world")?;
+println!("{:?}", model);
 // Success : GetModel { ... }
 ```
 
 ### Get Versions List
 
 ```rust
-match replicate
-        .models
-        .versions
-        .list("replicate", "hello-world")
-    {
-        Ok(result) => println!("Success : {:?}", result),
-        Err(e) => println!("Error : {}", e),
-};
+let versions = replicate.models.versions.list("replicate", "hello-world")?;
+println!("{:?}", versions);
 // Success : ListModelVersions { ... }
 ``````
 
 ### Get Model Version Information
 
 ```rust
-match replicate.models.versions.get(
-        "kvfrans",
+let model = replicate.models.versions.get(  "kvfrans",
         "clipdraw",
-        "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",
-    ) {
-        Ok(result) => println!("Success : {:?}", result),
-        Err(e) => println!("Error : {}", e),
-}
+        "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",)?;
+println!("{:?}", model);
 // Success : GetModelVersion { ... }
 ```
 
@@ -209,22 +186,16 @@ match replicate.models.versions.get(
 ### Get Collection Information
 
 ```rust
-match replicate.collections.get("audio-generation") {
-        Ok(result) => println!("Success : {:?}", result),
-        Err(e) => println!("Error : {}", e),
-    }
-
+let collection = replicate.collections.get("audio-generation")?;
+println!("{:?}", collection);
 // Success : GetCollectionModels { ... }
 ```
 
 ### Get Collection Lists
 
 ```rust
-match replicate.collections.list() {
-        Ok(result) => println!("Success : {:?}", result),
-        Err(e) => println!("Error : {}", e),
-    }
-
+let collections = replicate.collections.list()?;
+println!("{:?}", collections);
 // Success : ListCollectionModels { ... }
 ```
 

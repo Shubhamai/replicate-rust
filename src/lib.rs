@@ -25,14 +25,10 @@
 //! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Run the model.
-//! let result = replicate.run(version, inputs);
-//!
-//! // Print the result
-//! match result {
-//!     Ok(result) => println!("Success : {:?}", result.output),
-//!     Err(e) => println!("Error : {}", e),
-//! }
-//!
+//! let result = replicate.run(version, inputs)?;
+//! println!("Output : {:?}", result.output);
+//! 
+//!# Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 #![warn(missing_docs)]
 #![warn(missing_doc_code_examples)]
@@ -42,6 +38,7 @@ use std::collections::HashMap;
 use api_definitions::GetPrediction;
 use collection::Collection;
 use config::Config;
+use errors::ReplicateError;
 use model::Model;
 use prediction::Prediction;
 use training::Training;
@@ -54,6 +51,7 @@ pub mod training;
 pub mod version;
 
 pub mod api_definitions;
+pub mod errors;
 pub mod prediction_client;
 pub mod retry;
 
@@ -128,25 +126,17 @@ impl Replicate {
     /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Run the model.
-    /// let result = replicate.run(version, inputs);
+    /// let result = replicate.run(version, inputs)?;
     ///
-    /// // Print the result.
-    /// match result {
-    ///    Ok(result) => println!("Success : {:?}", result.output),
-    ///   Err(e) => println!("Error : {}", e),
-    /// }
+    /// println!("Output : {:?}", result.output);
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    /// # Errors
-    ///
-    /// TODO : Add errors
-    ///
     pub fn run<K: serde::Serialize, V: serde::Serialize>(
         &self,
         version: &str,
         inputs: HashMap<K, V>,
-        // TODO : Perhaps not Box<dyn std::error::Error> but something more specific?
-    ) -> Result<GetPrediction, Box<dyn std::error::Error>> {
-        let prediction = Prediction::new(self.config.clone()).create(version, inputs);
+    ) -> Result<GetPrediction, ReplicateError> {
+        let prediction = Prediction::new(self.config.clone()).create(version, inputs)?;
 
         prediction.wait()
     }
@@ -162,7 +152,7 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn test_run() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_run() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         // Mock the POST response
@@ -222,7 +212,7 @@ mod tests {
         let mut inputs = std::collections::HashMap::new();
         inputs.insert("text", "world");
 
-        let result = replicate.run("test/model:v1", inputs).unwrap();
+        let result = replicate.run("test/model:v1", inputs)?;
 
         // Assert that the returned value is correct
         assert_eq!(result.output, Some(serde_json::to_value("hello world")?));

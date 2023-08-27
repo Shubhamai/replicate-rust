@@ -10,14 +10,17 @@
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //!
-//! match replicate.collections.get("audio-generation") {
-//!     Ok(result) => println!("Success : {:?}", result),
-//!     Err(e) => println!("Error : {}", e),
-//! }
+//! let collections = replicate.collections.get("audio-generation")?;
+//! println!("Collection : {:?}", collections);
 //!
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
+//! ```
 //!
 
-use crate::api_definitions::{GetCollectionModels, ListCollectionModels};
+use crate::{
+    api_definitions::{GetCollectionModels, ListCollectionModels},
+    errors::ReplicateError,
+};
 
 /// Used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
 #[derive(Clone, Debug)]
@@ -42,15 +45,12 @@ impl Collection {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.collections.get("audio-generation") {
-    ///    Ok(result) => println!("Success : {:?}", result),
-    ///   Err(e) => println!("Error : {}", e),
-    /// }
+    /// let collections = replicate.collections.get("audio-generation")?;
+    /// println!("Collections : {:?}", collections);
+    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn get(
-        &self,
-        collection_slug: &str,
-    ) -> Result<GetCollectionModels, Box<dyn std::error::Error>> {
+    pub fn get(&self, collection_slug: &str) -> Result<GetCollectionModels, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -61,6 +61,10 @@ impl Collection {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: GetCollectionModels = serde_json::from_str(&response_string)?;
@@ -78,13 +82,12 @@ impl Collection {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.collections.list() {
-    ///   Ok(result) => println!("Success : {:?}", result),
-    ///   Err(e) => println!("Error : {}", e),
-    /// }
-    /// ```
+    /// let collections = replicate.collections.list()?;
+    /// println!("Collections : {:?}", collections);
     ///
-    pub fn list(&self) -> Result<ListCollectionModels, Box<dyn std::error::Error>> {
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
+    /// ```
+    pub fn list(&self) -> Result<ListCollectionModels, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -92,6 +95,10 @@ impl Collection {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: ListCollectionModels = serde_json::from_str(&response_string)?;
@@ -102,13 +109,13 @@ impl Collection {
 
 #[cfg(test)]
 mod tests {
-    use crate::{config::Config, Replicate};
+    use crate::{config::Config, errors::ReplicateError, Replicate};
 
     use httpmock::{Method::GET, MockServer};
     use serde_json::json;
 
     #[test]
-    fn test_get() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_get() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
@@ -141,7 +148,7 @@ mod tests {
     }
 
     #[test]
-    fn test_list() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_list() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
@@ -175,7 +182,7 @@ mod tests {
         let result = replicate.collections.list()?;
 
         // Assert that the returned value is correct
-        assert_eq!(result.results.len(), 2,);
+        assert_eq!(result.results.len(), 2);
 
         // Ensure the mocks were called as expected
         get_mock.assert();

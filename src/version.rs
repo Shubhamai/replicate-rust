@@ -9,25 +9,26 @@
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //!
-//! // List the versions of a model.
-//! match replicate.models.versions.list("replicate", "hello-world") {
-//!        Ok(result) => println!("Success : {:?}", result),
-//!        Err(e) => println!("Error : {}", e),
-//! };
+//! let versions = replicate.models.versions.list("replicate", "hello-world")?;
+//! println!("Versions : {:?}", versions);
+//!
 //!
 //! // Get the details of a model version.
-//! match replicate.models.versions.get(
+//! let version = replicate.models.versions.get(
 //!         "kvfrans",
 //!         "clipdraw",
 //!         "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",
-//!     ) {
-//!         Ok(result) => println!("Success : {:?}", result),
-//!         Err(e) => println!("Error : {}", e),
-//! };
+//!    )?;
+//! println!("Version : {:?}", version);
 //!
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
+//! ```
 //!
 
-use crate::api_definitions::{GetModelVersion, ListModelVersions};
+use crate::{
+    api_definitions::{GetModelVersion, ListModelVersions},
+    errors::ReplicateError,
+};
 
 /// Used to interact with the [Model Versions Endpoints](https://replicate.com/docs/refer   ence/http#models.versions.get).
 #[derive(Clone, Debug)]
@@ -51,21 +52,21 @@ impl Version {
     /// let replicate = Replicate::new(config);
     ///
     /// // Get the details of a model version.
-    /// match replicate.models.versions.get(
+    /// let version = replicate.models.versions.get(
     ///         "kvfrans",
     ///         "clipdraw",
     ///         "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",
-    ///     ) {
-    ///         Ok(result) => println!("Success : {:?}", result),
-    ///         Err(e) => println!("Error : {}", e),
-    /// };
+    ///     )?;
+    /// println!("Version : {:?}", version);
+    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
     pub fn get(
         &self,
         model_owner: &str,
         model_name: &str,
         version_id: &str,
-    ) -> Result<GetModelVersion, Box<dyn std::error::Error>> {
+    ) -> Result<GetModelVersion, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -76,6 +77,10 @@ impl Version {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: GetModelVersion = serde_json::from_str(&response_string)?;
@@ -90,17 +95,16 @@ impl Version {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// // List the versions of a model.
-    /// match replicate.models.versions.list("replicate", "hello-world") {
-    ///        Ok(result) => println!("Success : {:?}", result),
-    ///        Err(e) => println!("Error : {}", e),
-    /// };
+    /// let versions = replicate.models.versions.list("replicate", "hello-world")?;
+    /// println!("Versions : {:?}", versions);
+    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
     pub fn list(
         &self,
         model_owner: &str,
         model_name: &str,
-    ) -> Result<ListModelVersions, Box<dyn std::error::Error>> {
+    ) -> Result<ListModelVersions, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -111,6 +115,10 @@ impl Version {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: ListModelVersions = serde_json::from_str(&response_string)?;

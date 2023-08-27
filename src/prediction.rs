@@ -15,14 +15,12 @@
 //! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Run the model.
-//! let result = replicate.predictions.create(version, inputs).wait();
+//! let result = replicate.predictions.create(version, inputs)?.wait()?;
 //!
 //! // Print the result.
-//! match result {
-//!     Ok(result) => println!("Success : {:?}", result.output),
-//!     Err(e) => println!("Error : {}", e),
-//! }
+//! println!("Result : {:?}", result.output);
 //!
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 //!
 //! ## Another example to showcase other methods
@@ -40,7 +38,7 @@
 //! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Run the model.
-//! let mut prediction = replicate.predictions.create(version, inputs);
+//! let mut prediction = replicate.predictions.create(version, inputs)?;
 //!
 //! println!("Prediction : {:?}", prediction.status);
 //!
@@ -53,10 +51,9 @@
 //! println!("Predictions : {:?}", prediction.status);;
 //!
 //! // Wait for the prediction to complete (or fail).
-//! match prediction.wait() {
-//!        Ok(result) => println!("Success : {:?}", result.output),
-//!        Err(e) => println!("Error : {}", e),
-//!    }
+//! println!("Prediction : {:?}", prediction.wait()?);
+//!
+//! # Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 //!
 //!
@@ -66,6 +63,7 @@ use std::collections::HashMap;
 
 use crate::{
     api_definitions::{GetPrediction, ListPredictions},
+    errors::ReplicateError,
     prediction_client::PredictionClient,
 };
 
@@ -110,7 +108,7 @@ impl Prediction {
     /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Run the model.
-    /// let mut prediction = replicate.predictions.create(version, inputs);
+    /// let mut prediction = replicate.predictions.create(version, inputs)?;
     ///
     /// println!("Prediction : {:?}", prediction.status);
     ///
@@ -119,21 +117,21 @@ impl Prediction {
     /// println!("Prediction : {:?}", prediction.status);
     ///
     /// // Wait for the prediction to complete (or fail).
-    /// match prediction.wait() {
-    ///    Ok(result) => println!("Success : {:?}", result.output),
-    ///    Err(e) => println!("Error : {}", e),
-    /// }
+    /// println!("Prediction : {:?}", prediction.wait()?);
+    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
     ///
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
         &self,
         version: &str,
         inputs: HashMap<K, V>,
-    ) -> PredictionClient {
-        match PredictionClient::create(self.parent.clone(), version, inputs) {
-            Ok(prediction) => prediction,
-            Err(e) => panic!("Error : {}", e),
-        }
+    ) -> Result<PredictionClient, ReplicateError> {
+        Ok(PredictionClient::create(
+            self.parent.clone(),
+            version,
+            inputs,
+        )?)
     }
 
     /// List all predictions executed in Replicate by the user.
@@ -146,12 +144,12 @@ impl Prediction {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.predictions.list() {
-    ///    Ok(result) => println!("Success : {:?}", result),
-    ///    Err(e) => println!("Error : {}", e),
-    /// };
+    /// let predictions = replicate.predictions.list()?;
+    /// println!("Predictions : {:?}", predictions);
+    ///
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
     /// ```
-    pub fn list(&self) -> Result<ListPredictions, Box<dyn std::error::Error>> {
+    pub fn list(&self) -> Result<ListPredictions, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -159,6 +157,10 @@ impl Prediction {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: ListPredictions = serde_json::from_str(&response_string)?;
@@ -172,18 +174,17 @@ impl Prediction {
     /// # Example
     ///
     /// ```
-    ///
     /// use replicate_rust::{Replicate, config::Config};
     ///
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.predictions.get("rrr4z55ocneqzikepnug6xezpe") {
-    ///   Ok(result) => println!("Success : {:?}", result),
-    ///   Err(e) => println!("Error : {}", e),
-    /// };
+    /// let prediction = replicate.predictions.get("rrr4z55ocneqzikepnug6xezpe")?;
+    /// println!("Prediction : {:?}", prediction);
     ///
-    pub fn get(&self, id: &str) -> Result<GetPrediction, Box<dyn std::error::Error>> {
+    /// # Ok::<(), replicate_rust::errors::ReplicateError>(())
+    /// ```
+    pub fn get(&self, id: &str) -> Result<GetPrediction, ReplicateError> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -191,6 +192,10 @@ impl Prediction {
             .header("Authorization", format!("Token {}", self.parent.auth))
             .header("User-Agent", &self.parent.user_agent)
             .send()?;
+
+        if !response.status().is_success() {
+            return Err(ReplicateError::ResponseError(response.text()?));
+        }
 
         let response_string = response.text()?;
         let response_struct: GetPrediction = serde_json::from_str(&response_string)?;
@@ -208,7 +213,7 @@ mod tests {
     use serde_json::json;
 
     #[test]
-    fn test_list() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_list() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
@@ -259,7 +264,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_get() -> Result<(), ReplicateError> {
         let server = MockServer::start();
 
         let get_mock = server.mock(|when, then| {
