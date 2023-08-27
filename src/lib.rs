@@ -6,7 +6,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! replicate-rust = "0.0.4"
+//! replicate-rust = "0.0.5"
 //! ```
 //!
 //! Grab your token from [replicate.com/account](https://replicate.com/account) and set it as an environment variable:
