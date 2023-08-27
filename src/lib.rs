@@ -145,7 +145,7 @@
 //!   println!("{:?}", collection);
 //!   // GetCollectionModels { ... }//!   ```
 //!    ```
-//! 
+//!
 //! - Get Collection Lists:
 //!   ```rust
 //!   let collections = replicate.collections.list()?;
@@ -267,7 +267,6 @@ impl Replicate {
 
 #[cfg(test)]
 mod tests {
-    use crate::api_definitions::OptionSerdeJson;
 
     use super::*;
     use httpmock::{
@@ -340,10 +339,7 @@ mod tests {
         let result = replicate.run("test/model:v1", inputs)?;
 
         // Assert that the returned value is correct
-        assert_eq!(
-            result.output,
-            OptionSerdeJson(Some(serde_json::to_value("hello world")?))
-        );
+        assert_eq!(result.output, Some(serde_json::to_value("hello world")?));
 
         // Ensure the mocks were called as expected
         post_mock.assert();

@@ -35,9 +35,6 @@ where
     }
 }
 
-/// Struct for Option<serde_json::Value>
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct OptionSerdeJson(pub Option<serde_json::Value>);
 
 /// GET https://api.replicate.com/v1/models/{model_owner}/{model_name}
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -107,7 +104,7 @@ pub struct GetPrediction {
     pub input: HashMap<String, serde_json::Value>,
 
     // Either a vector of string or a simple string
-    pub output: OptionSerdeJson,
+    pub output: Option<serde_json::Value>,
 
     pub error: Option<String>,
     pub logs: Option<String>,
@@ -297,19 +294,6 @@ impl_display! {
     ListModelVersions,
     ListTrainingItem,
     ListTraining
-}
-
-// Implement Display for OptionSerdeJson
-impl std::fmt::Display for OptionSerdeJson {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self.0 {
-            Some(value) => match serde_json::to_string_pretty(value) {
-                Ok(formatted) => write!(f, "{:?}", formatted),
-                Err(_) => write!(f, "{:?}", value),
-            },
-            None => write!(f, "None"),
-        }
-    }
 }
 
 ///////////////////////////////////////////////////////////
