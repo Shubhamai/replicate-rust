@@ -27,7 +27,7 @@
 //! // Run the model.
 //! let result = replicate.run(version, inputs)?;
 //! println!("Output : {:?}", result.output);
-//! 
+//!
 //!# Ok::<(), replicate_rust::errors::ReplicateError>(())
 //! ```
 #![warn(missing_docs)]

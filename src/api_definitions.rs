@@ -258,6 +258,38 @@ pub struct ListTraining {
     pub results: Vec<ListTrainingItem>,
 }
 
+macro_rules! impl_display {
+    ($($t:ty),*) => ($(
+        impl std::fmt::Display for $t {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+
+                match serde_json::to_string_pretty(&self) {
+                    Ok(formatted) => write!(f, "{:?}", formatted),
+                    Err(_) => write!(f, "{:?}", self),
+                }
+            }
+        }
+    )*)
+}
+
+impl_display! {
+    GetModel,
+    GetCollectionModels,
+    PredictionsUrls,
+    GetPrediction,
+    GetTraining,
+    CreateTraining,
+    CreatePrediction,
+    GetModelVersion,
+    ListCollectionModelsItem,
+    ListCollectionModels,
+    PredictionsListItem,
+    ListPredictions,
+    ListModelVersions,
+    ListTrainingItem,
+    ListTraining
+}
+
 ///////////////////////////////////////////////////////////
 
 /// Source of the prediction, either from the API or from the web
