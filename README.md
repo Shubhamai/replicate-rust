@@ -23,6 +23,8 @@
 
 </p>
 
+<!-- cargo-rdme start -->
+
 An Unofficial Rust client for [Replicate](https://replicate.com). Provides a type-safe interface by deserializing API responses into Rust structs.
 
 ## Getting Started
