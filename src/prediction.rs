@@ -69,14 +69,18 @@ use crate::{
     prediction_client::PredictionClient,
 };
 
+/// Used to interact with the [Prediction Endpoints](https://replicate.com/docs/reference/http#predictions.get).
 #[derive(Serialize)]
 pub struct PredictionPayload<K: serde::Serialize, V: serde::ser::Serialize> {
+    /// Version of the model used for the prediction
     pub version: String,
+
+    /// Input to the model
     pub input: HashMap<K, V>,
 }
 
 /// Used to interact with the [Prediction Endpoints](https://replicate.com/docs/reference/http#predictions.get).
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Prediction {
     /// Holds a reference to a Config struct. Use to get the base url, auth token among other settings.
     pub parent: crate::config::Config,
@@ -122,11 +126,11 @@ impl Prediction {
     /// ```
     ///
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
-        self,
+        &self,
         version: &str,
         inputs: HashMap<K, V>,
     ) -> PredictionClient {
-        match PredictionClient::create(self.parent, version, inputs) {
+        match PredictionClient::create(self.parent.clone(), version, inputs) {
             Ok(prediction) => prediction,
             Err(e) => panic!("Error : {}", e),
         }

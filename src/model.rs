@@ -24,6 +24,7 @@ use crate::{api_definitions::GetModel, version::Version};
 
 // #[derive(Clone)]
 /// Used to interact with the [Model Endpoints](https://replicate.com/docs/reference/http#models.get).
+#[derive(Clone, Debug)]
 pub struct Model {
     /// Holds a reference to a Configuration struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,

@@ -35,11 +35,17 @@ use crate::api_definitions::{CreateTraining, GetTraining, ListTraining, WebhookE
 
 /// Contains all the options for creating a training.
 pub struct TrainingOptions {
+
+    /// A string representing the desired model to push to in the format {destination_model_owner}/{destination_model_name}. This should be an existing model owned by the user or organization making the API request. If the destination is invalid, the server returns an appropriate 4XX response.
     pub destination: String,
 
+    /// An object containing inputs to the Cog model's train() function.
     pub input: HashMap<String, String>,
 
+    /// An HTTPS URL for receiving a webhook when the training completes. The webhook will be a POST request where the request body is the same as the response body of the get training operation. If there are network problems, we will retry the webhook a few times, so make sure it can be safely called more than once.
     pub webhook: String,
+
+    /// TO only send specifc events to the webhook, use this field. If not specified, all events will be sent. TODO : Add this to the API 
     pub _webhook_events_filter: Option<WebhookEvents>,
 }
 
@@ -47,21 +53,28 @@ pub struct TrainingOptions {
 /// Data to be sent to the API when creating a training.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct CreateTrainingPayload {
+
+    /// A string representing the desired model to push to in the format {destination_model_owner}/{destination_model_name}. This should be an existing model owned by the user or organization making the API request. If the destination is invalid, the server returns an appropriate 4XX response.
     pub destination: String,
 
+    /// An object containing inputs to the Cog model's train() function.
     pub input: HashMap<String, String>,
 
+    /// An HTTPS URL for receiving a webhook when the training completes. The webhook will be a POST request where the request body is the same as the response body of the get training operation. If there are network problems, we will retry the webhook a few times, so make sure it can be safely called more than once.
     pub webhook: String,
 }
 
-// #[derive(Clone)]
+/// Used to interact with the [Training Endpoints](https://replicate.com/docs/reference/http#trainings.create).
+#[derive(Clone, Debug)]
 pub struct Training {
-    // Holds a reference to a Replicate
+    /// Holds a reference to a Configuration struct, which contains the base url, auth token among other settings.
     pub parent: crate::config::Config,
 }
 
 /// Training struct contains all the functionality for interacting with the training endpoints of the Replicate API.
 impl Training {
+
+    /// Create a new Training struct.
     pub fn new(rep: crate::config::Config) -> Self {
         Self { parent: rep }
     }

@@ -62,6 +62,7 @@ pub mod retry;
 /// * [Models](https://replicate.com/docs/reference/http#models.get)
 /// * [Trainings](https://replicate.com/docs/reference/http#trainings.create)
 /// * [Collections](https://replicate.com/docs/reference/http#collections.get)
+#[derive(Clone, Debug)]
 pub struct Replicate {
     /// Holds a reference to a Config struct.
     config: Config,

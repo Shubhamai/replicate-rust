@@ -20,6 +20,7 @@
 use crate::api_definitions::{GetCollectionModels, ListCollectionModels};
 
 /// Used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
+#[derive(Clone, Debug)]
 pub struct Collection {
     /// Holds a reference to a Config struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,

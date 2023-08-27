@@ -43,26 +43,34 @@ export REPLICATE_API_TOKEN=<your token>
 Here's an example using `replicate_rust` to run a model. 
 
 ```rust
-use replicate_rust::{Replicate, config::Config};
+use replicate_rust::{config::Config, Replicate};
 
-let config = Config::default();
-let replicate = Replicate::new(config);
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let config = Config::default();
+    // Instead of using the default config ( which reads API token from env variable), you can also set the token directly:
+    // let config = Config {
+    //     auth: String::from("REPLICATE_API_TOKEN"),
+    //     ..Default::default()
+    // };
 
-// Construct the inputs.
-let mut inputs = std::collections::HashMap::new();
-inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+    let replicate = Replicate::new(config);
 
-let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+    // Construct the inputs.
+    let mut inputs = std::collections::HashMap::new();
+    inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-// Run the model.
-let result = replicate.run(version, inputs);
+    let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
-// Print the result.
-match result {
-    Ok(result) => println!("Success : {:?}", result.output),
-    Err(e) => println!("Error : {}", e),
+    // Run the model.
+    let result = replicate.run(version, inputs)?;
+
+    // Print the result.
+    println!("{:?}", result.output);
+    // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
+
+    Ok(())
 }
-// Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
+
 ```
 
 ## Usage
@@ -90,31 +98,26 @@ let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b29
 // Run the model.
 let mut prediction = replicate.predictions.create(version, inputs);
 
-println!("{}", prediction.status)
+println!("{:?}", prediction.status);
 // 'starting'
 
-
-prediction.reload()
-println!("{}", prediction.status)
+prediction.reload()?;
+println!("{:?}", prediction.status);
 // 'processing'
 
-println!("{}", prediction.logs)
+println!("{:?}", prediction.logs);
 // Some("Using seed: 3599
 //      0%|          | 0/50 [00:00<?, ?it/s]
 //      4%|▍         | 2/50 [00:00<00:04, 10.00it/s]
 //      8%|▊         | 4/50 [00:00<00:03, 11.56it/s]
 //    ")
 
-prediction.wait()
+let prediction = prediction.wait()?;
 
-println!("{}", prediction.status)
+println!("{:?}", prediction.status);
 // 'succeeded'
 
-
-match prediction.wait() {
-    Ok(result) => println!("Success : {:?}", result.output),
-    Err(e) => println!("Error : {}", e),
-}
+println!("{:?}", prediction.output);
 // Success : Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])
 ```
 
@@ -124,7 +127,6 @@ match prediction.wait() {
 You can cancel a running prediction:
 
 ```rust
-
 let config = Config::default();
 let replicate = Replicate::new(config);
 
@@ -137,14 +139,14 @@ let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b29
 // Run the model.
 let mut prediction = replicate.predictions.create(version, inputs);
 
-println!("{}", prediction.status)
+println!("{:?}", prediction.status);
 // 'starting'
 
-prediction.cancel()
+prediction.cancel()?;
 
-prediction.reload()
+prediction.reload()?;
 
-println!("{}", prediction.status)
+println!("{:?}", prediction.status);
 // 'cancelled'
 ```
 

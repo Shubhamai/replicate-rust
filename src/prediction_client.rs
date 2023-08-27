@@ -59,6 +59,7 @@ pub fn parse_version(s: &str) -> Option<(&str, &str)> {
 
 /// Helper struct for the Prediction struct. Used to create a prediction, reload for latest info, cancel it and wait for prediction to complete.
 #[allow(missing_docs)]
+#[derive(Clone, Debug)]
 pub struct PredictionClient {
     /// Holds a reference to a Configuration struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,
@@ -254,7 +255,7 @@ impl PredictionClient {
     ///
     ///
     /// ```
-    pub fn wait(self) -> Result<GetPrediction, Box<dyn std::error::Error>> {
+    pub fn wait(&self) -> Result<GetPrediction, Box<dyn std::error::Error>> {
         // TODO : Implement a retry policy
         let retry_policy = RetryPolicy::new(5, RetryStrategy::FixedDelay(1000));
         let client = reqwest::blocking::Client::new();

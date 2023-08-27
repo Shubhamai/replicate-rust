@@ -29,8 +29,8 @@
 
 use crate::api_definitions::{GetModelVersion, ListModelVersions};
 
-// #[derive(Clone)]
 /// Used to interact with the [Model Versions Endpoints](https://replicate.com/docs/refer   ence/http#models.versions.get).
+#[derive(Clone, Debug)]
 pub struct Version {
     /// Holds a reference to a Configuration struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,
