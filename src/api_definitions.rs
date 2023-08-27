@@ -35,6 +35,10 @@ where
     }
 }
 
+/// Struct for Option<serde_json::Value>
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct OptionSerdeJson(pub Option<serde_json::Value>);
+
 /// GET https://api.replicate.com/v1/models/{model_owner}/{model_name}
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetModel {
@@ -103,7 +107,7 @@ pub struct GetPrediction {
     pub input: HashMap<String, serde_json::Value>,
 
     // Either a vector of string or a simple string
-    pub output: Option<serde_json::Value>,
+    pub output: OptionSerdeJson,
 
     pub error: Option<String>,
     pub logs: Option<String>,
@@ -258,6 +262,11 @@ pub struct ListTraining {
     pub results: Vec<ListTrainingItem>,
 }
 
+///////////////////////////////////////////////////////////
+///
+/// Implement Display for all the structs
+///
+///////////////////////////////////////////////////////////
 macro_rules! impl_display {
     ($($t:ty),*) => ($(
         impl std::fmt::Display for $t {
@@ -290,6 +299,19 @@ impl_display! {
     ListTraining
 }
 
+// Implement Display for OptionSerdeJson
+impl std::fmt::Display for OptionSerdeJson {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.0 {
+            Some(value) => match serde_json::to_string_pretty(value) {
+                Ok(formatted) => write!(f, "{:?}", formatted),
+                Err(_) => write!(f, "{:?}", value),
+            },
+            None => write!(f, "None"),
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////
 
 /// Source of the prediction, either from the API or from the web
@@ -319,4 +341,30 @@ pub enum WebhookEvents {
     output,
     logs,
     completed,
+}
+
+///////////////////////////////////////////////////////////
+///
+/// Implement Display for the enums
+///
+/// ///////////////////////////////////////////////////////
+
+macro_rules! impl_display {
+    ($($t:ty),*) => ($(
+        impl std::fmt::Display for $t {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+
+                match serde_json::to_string_pretty(&self) {
+                    Ok(formatted) => write!(f, "{:?}", formatted),
+                    Err(_) => write!(f, "{:?}", self),
+                }
+            }
+        }
+    )*)
+}
+
+impl_display! {
+    PredictionSource,
+    PredictionStatus,
+    WebhookEvents
 }

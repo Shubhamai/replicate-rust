@@ -14,27 +14,23 @@ fn main() -> Result<(), ReplicateError> {
 
     let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
-    // Run the model.
-    let result = replicate.run(version, inputs)?;
-
-    // Print the result
-    println!("Success : {:?}", result.output);
-
-    // Run the model.
+    // // Run the model.
     // let result = replicate.run(version, inputs)?;
 
-    // // Print the result.
-    // println!("Success : {:?}", result.output);
+    // // Print the result
+    // println!("Success : {}", result.output);
 
-    // let mut prediction = replicate.predictions.create(version, inputs);
-    // println!("Prediction : {:?}", prediction.status);
-    // // let _ = prediction.cancel();
-    // println!("Predictions : {:?}", prediction.status);
-    // println!("Predictionss : {:?}", prediction.status);
-    // let _ = prediction.reload();
-    // println!("Prediction : {:?}", prediction.logs);
+    ////////////////////////////////////////////////////////////////////////////////////////
 
-    // println!("Prediction : {:?}", prediction.wait()?);
+    let mut prediction = replicate.predictions.create(version, inputs)?;
+    println!("Prediction : {}", prediction.status);
+    // let _ = prediction.cancel();
+    println!("Predictions : {}", prediction.status);
+    println!("Predictionss : {}", prediction.status);
+    let _ = prediction.reload();
+    println!("Prediction : {:?}", prediction.logs);
+
+    println!("Prediction : {}", prediction.wait()?);
 
     // let prediction_list = replicate.predictions.list()?;
     // println!("Prediction Lists : {:?}", prediction_list);

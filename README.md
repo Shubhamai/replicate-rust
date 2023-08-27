@@ -23,7 +23,7 @@
 
 </p>
 
-An Unofficial Rust client for <a href="https://replicate.com">Replicate</a>. Provides a type-safe interface by deserializing API responses into Rust structs. 
+An Unofficial Rust client for [Replicate](https://replicate.com). Provides a type-safe interface by deserializing API responses into Rust structs.
 
 ## Getting Started
 
@@ -40,35 +40,35 @@ Grab your token from [replicate.com/account](https://replicate.com/account) and 
 export REPLICATE_API_TOKEN=<your token>
 ```
 
-Here's an example using `replicate_rust` to run a model. 
+Here's an example using `replicate_rust` to run a model:
 
 ```rust
 use replicate_rust::{config::Config, Replicate, errors::ReplicateError};
 
 fn main() -> Result<(), ReplicateError> {
-    let config = Config::default();
-    // Instead of using the default config ( which reads API token from env variable), you can also set the token directly:
-    // let config = Config {
-    //     auth: String::from("REPLICATE_API_TOKEN"),
-    //     ..Default::default()
-    // };
+   let config = Config::default();
+   // Instead of using the default config ( which reads API token from env variable), you can also set the token directly:
+   // let config = Config {
+   //     auth: String::from("REPLICATE_API_TOKEN"),
+   //     ..Default::default()
+   // };
 
-    let replicate = Replicate::new(config);
+   let replicate = Replicate::new(config);
 
-    // Construct the inputs.
-    let mut inputs = std::collections::HashMap::new();
-    inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+   // Construct the inputs.
+   let mut inputs = std::collections::HashMap::new();
+   inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-    let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+   let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
-    // Run the model.
-    let result = replicate.run(version, inputs)?;
+   // Run the model.
+   let result = replicate.run(version, inputs)?;
 
-    // Print the result.
-    println!("{:?}", result.output);
-    // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
+   // Print the result.
+   println!("{:?}", result.output);
+   // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
 
-    Ok(())
+   Ok(())
 }
 ```
 
@@ -76,133 +76,108 @@ fn main() -> Result<(), ReplicateError> {
 
 See the [reference docs](https://docs.rs/replicate-rust/) for detailed API documentation.
 
----
-
 ## Examples
 
-### Run a model in the background
+- Run a model in the background:
+    ```rust
+    // Construct the inputs.
+    let mut inputs = std::collections::HashMap::new();
+    inputs.insert("prompt", "a 19th century portrait of a wombat gentleman");
 
-You can start a model and run it in the background:
+    let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
-```rust
-// Construct the inputs.
-let mut inputs = std::collections::HashMap::new();
-inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+    // Run the model.
+    let mut prediction = replicate.predictions.create(version, inputs)?;
 
-let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+    println!("{:?}", prediction.status);
+    // 'starting'
 
-// Run the model.
-let mut prediction = replicate.predictions.create(version, inputs)?;
+    prediction.reload()?;
+    println!("{:?}", prediction.status);
+    // 'processing'
 
-println!("{:?}", prediction.status);
-// 'starting'
+    println!("{:?}", prediction.logs);
+    // Some("Using seed: 3599
+    // 0%|          | 0/50 [00:00<?, ?it/s]
+    // 4%|▍         | 2/50 [00:00<00:04, 10.00it/s]
+    // 8%|▊         | 4/50 [00:00<00:03, 11.56it/s]
+   
 
-prediction.reload()?;
-println!("{:?}", prediction.status);
-// 'processing'
+    let prediction = prediction.wait()?;
 
-println!("{:?}", prediction.logs);
-// Some("Using seed: 3599
-//      0%|          | 0/50 [00:00<?, ?it/s]
-//      4%|▍         | 2/50 [00:00<00:04, 10.00it/s]
-//      8%|▊         | 4/50 [00:00<00:03, 11.56it/s]
-//    ")
+    println!("{:?}", prediction.status);
+    // 'succeeded'
 
-let prediction = prediction.wait()?;
+    println!("{:?}", prediction.output);
+    ```
 
-println!("{:?}", prediction.status);
-// 'succeeded'
+- Cancel a prediction:
+  ```rust
+  // Construct the inputs.
+  let mut inputs = std::collections::HashMap::new();
+  inputs.insert("prompt", "a 19th century portrait of a wombat gentleman");
 
-println!("{:?}", prediction.output);
-// Success : Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])
-```
+  let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
+  // Run the model.
+  let mut prediction = replicate.predictions.create(version, inputs)?;
 
-### Cancel a prediction
+  println!("{:?}", prediction.status);
+  // 'starting'
 
-You can cancel a running prediction:
+  prediction.cancel()?;
 
-```rust
-// Construct the inputs.
-let mut inputs = std::collections::HashMap::new();
-inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+  prediction.reload()?;
 
-let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+  println!("{:?}", prediction.status);
+  // 'cancelled'
+  ```
 
-// Run the model.
-let mut prediction = replicate.predictions.create(version, inputs)?;
+- List predictions:
+  ```rust
+  let predictions = replicate.predictions.list()?;
+  println!("{:?}", predictions);
+  // ListPredictions { ... }
+  ```
 
-println!("{:?}", prediction.status);
-// 'starting'
+- Get model Information:
+  ```rust
+  let model = replicate.models.get("replicate", "hello-world")?;
+  println!("{:?}", model);
+  // GetModel { ... }
+  ```
 
-prediction.cancel()?;
+- Get Versions List:
+  ```rust
+  let versions = replicate.models.versions.list("replicate", "hello-world")?;
+  println!("{:?}", versions);
+  // ListModelVersions { ... }
+  ```
 
-prediction.reload()?;
+- Get Model Version Information:
+  ```rust
+  let model = replicate.models.versions.get("kvfrans",
+  "clipdraw",
+  "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",)?;
+  println!("{:?}", model);
+  // GetModelVersion { ... }
+  ```
 
-println!("{:?}", prediction.status);
-// 'cancelled'
-```
+- Get Collection Information:
+  ```rust
+  let collection = replicate.collections.get("audio-generation")?;
+  println!("{:?}", collection);
+  // GetCollectionModels { ... }//!   ```
+   ```
 
-### List predictions
+- Get Collection Lists:
+  ```rust
+  let collections = replicate.collections.list()?;
+  println!("{:?}", collections);
+  // ListCollectionModels { ... }
+  ```
 
-You can list all the predictions you've run:
-
-```rust
-let predictions = replicate.predictions.list()?;
-println!("{:?}", predictions);
-// Success : ListPredictions { ... }
-```
-
----
-
-### Get model Information
-
-```rust
-let model = replicate.models.get("replicate", "hello-world")?;
-println!("{:?}", model);
-// Success : GetModel { ... }
-```
-
-### Get Versions List
-
-```rust
-let versions = replicate.models.versions.list("replicate", "hello-world")?;
-println!("{:?}", versions);
-// Success : ListModelVersions { ... }
-``````
-
-### Get Model Version Information
-
-```rust
-let model = replicate.models.versions.get(  "kvfrans",
-        "clipdraw",
-        "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",)?;
-println!("{:?}", model);
-// Success : GetModelVersion { ... }
-```
-
----
-
-### Get Collection Information
-
-```rust
-let collection = replicate.collections.get("audio-generation")?;
-println!("{:?}", collection);
-// Success : GetCollectionModels { ... }
-```
-
-### Get Collection Lists
-
-```rust
-let collections = replicate.collections.list()?;
-println!("{:?}", collections);
-// Success : ListCollectionModels { ... }
-```
-
----
-
-
-
+<!-- cargo-rdme end -->
 
 [crates.io]: https://crates.io/crates/replicate-rust
 [Latest Version]: https://img.shields.io/crates/v/replicate-rust.svg

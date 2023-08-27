@@ -1,35 +1,158 @@
-//! Rust Client for interacting with the [Replicate API](https://replicate.com/docs/api/). Provides a type-safe interface by deserializing API responses into Rust structs.
+//! An Unofficial Rust client for [Replicate](https://replicate.com). Provides a type-safe interface by deserializing API responses into Rust structs.
 //!
-//! ### Getting Started
+//! ## Getting Started
 //!
-//! Add `replicate_rust` to your `Cargo.toml` file.
+//! Add `replicate_rust` to `Cargo.toml`:
+//!
 //! ```toml
 //! [dependencies]
-//! replicate_rust = "0.0.3"
+//! replicate-rust = "0.0.3"
 //! ```
 //!
-//! ## Example
-//! In this example we will run a model that generates a caption for an image using the [Stable Diffusion](
-//! https://replicate.ai/stability-ai/stable-diffusion) model.
+//! Grab your token from [replicate.com/account](https://replicate.com/account) and set it as an environment variable:
 //!
+//! ```sh
+//! export REPLICATE_API_TOKEN=<your token>
 //! ```
-//! use replicate_rust::{Replicate, config::Config};
 //!
-//! let config = Config::default();
-//! let replicate = Replicate::new(config);
+//! Here's an example using `replicate_rust` to run a model:
 //!
-//! // Creating the inputs
-//! let mut inputs = std::collections::HashMap::new();
-//! inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+//! ```rust
+//! use replicate_rust::{config::Config, Replicate, errors::ReplicateError};
 //!
-//! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+//! fn main() -> Result<(), ReplicateError> {
+//!    let config = Config::default();
+//!    // Instead of using the default config ( which reads API token from env variable), you can also set the token directly:
+//!    // let config = Config {
+//!    //     auth: String::from("REPLICATE_API_TOKEN"),
+//!    //     ..Default::default()
+//!    // };
 //!
-//! // Run the model.
-//! let result = replicate.run(version, inputs)?;
-//! println!("Output : {:?}", result.output);
+//!    let replicate = Replicate::new(config);
 //!
-//!# Ok::<(), replicate_rust::errors::ReplicateError>(())
+//!    // Construct the inputs.
+//!    let mut inputs = std::collections::HashMap::new();
+//!    inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
+//!
+//!    let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+//!
+//!    // Run the model.
+//!    let result = replicate.run(version, inputs)?;
+//!
+//!    // Print the result.
+//!    println!("{:?}", result.output);
+//!    // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])```
+//!
+//!    Ok(())
+//! }
 //! ```
+//!
+//! ## Usage
+//!
+//! See the [reference docs](https://docs.rs/replicate-rust/) for detailed API documentation.
+//!
+//! ## Examples
+//!
+//! - Run a model in the background:
+//!     ```rust
+//!     // Construct the inputs.
+//!     let mut inputs = std::collections::HashMap::new();
+//!     inputs.insert("prompt", "a 19th century portrait of a wombat gentleman");
+//!
+//!     let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+//!
+//!     // Run the model.
+//!     let mut prediction = replicate.predictions.create(version, inputs)?;
+//!
+//!     println!("{:?}", prediction.status);
+//!     // 'starting'
+//!
+//!     prediction.reload()?;
+//!     println!("{:?}", prediction.status);
+//!     // 'processing'
+//!
+//!     println!("{:?}", prediction.logs);
+//!     // Some("Using seed: 3599
+//!     // 0%|          | 0/50 [00:00<?, ?it/s]
+//!     // 4%|▍         | 2/50 [00:00<00:04, 10.00it/s]
+//!     // 8%|▊         | 4/50 [00:00<00:03, 11.56it/s]
+//!    
+//!
+//!     let prediction = prediction.wait()?;
+//!
+//!     println!("{:?}", prediction.status);
+//!     // 'succeeded'
+//!
+//!     println!("{:?}", prediction.output);
+// !    // Some(Array [String("https://pbxt.replicate.delivery/QLDGe2rXuIQ9ByMViQEXrYCkKfDi9I3YWAzPwWsDZWMXeN7iA/out-0.png")])
+//!     ```
+//!
+//! - Cancel a prediction:
+//!   ```rust
+//!   // Construct the inputs.
+//!   let mut inputs = std::collections::HashMap::new();
+//!   inputs.insert("prompt", "a 19th century portrait of a wombat gentleman");
+//!
+//!   let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+//!
+//!   // Run the model.
+//!   let mut prediction = replicate.predictions.create(version, inputs)?;
+//!
+//!   println!("{:?}", prediction.status);
+//!   // 'starting'
+//!
+//!   prediction.cancel()?;
+//!
+//!   prediction.reload()?;
+//!
+//!   println!("{:?}", prediction.status);
+//!   // 'cancelled'
+//!   ```
+//!
+//! - List predictions:
+//!   ```rust
+//!   let predictions = replicate.predictions.list()?;
+//!   println!("{:?}", predictions);
+//!   // ListPredictions { ... }
+//!   ```
+//!
+//! - Get model Information:
+//!   ```rust
+//!   let model = replicate.models.get("replicate", "hello-world")?;
+//!   println!("{:?}", model);
+//!   // GetModel { ... }
+//!   ```
+//!
+//! - Get Versions List:
+//!   ```rust
+//!   let versions = replicate.models.versions.list("replicate", "hello-world")?;
+//!   println!("{:?}", versions);
+//!   // ListModelVersions { ... }
+//!   ```
+//!
+//! - Get Model Version Information:
+//!   ```rust
+//!   let model = replicate.models.versions.get("kvfrans",
+//!   "clipdraw",
+//!   "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",)?;
+//!   println!("{:?}", model);
+//!   // GetModelVersion { ... }
+//!   ```
+//!
+//! - Get Collection Information:
+//!   ```rust
+//!   let collection = replicate.collections.get("audio-generation")?;
+//!   println!("{:?}", collection);
+//!   // GetCollectionModels { ... }//!   ```
+//!    ```
+//! 
+//! - Get Collection Lists:
+//!   ```rust
+//!   let collections = replicate.collections.list()?;
+//!   println!("{:?}", collections);
+//!   // ListCollectionModels { ... }
+//!   ```
+//!
 #![warn(missing_docs)]
 #![warn(missing_doc_code_examples)]
 
@@ -144,6 +267,8 @@ impl Replicate {
 
 #[cfg(test)]
 mod tests {
+    use crate::api_definitions::OptionSerdeJson;
+
     use super::*;
     use httpmock::{
         Method::{GET, POST},
@@ -215,7 +340,10 @@ mod tests {
         let result = replicate.run("test/model:v1", inputs)?;
 
         // Assert that the returned value is correct
-        assert_eq!(result.output, Some(serde_json::to_value("hello world")?));
+        assert_eq!(
+            result.output,
+            OptionSerdeJson(Some(serde_json::to_value("hello world")?))
+        );
 
         // Ensure the mocks were called as expected
         post_mock.assert();
