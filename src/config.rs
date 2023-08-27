@@ -24,6 +24,8 @@
 //!
 //! let replicate = Replicate::new(config);
 //! ```    
+
+/// The Config struct is used to initialize configuration for the API. Currently contains the `API token`, the `user agent` and the `base url`.
 #[derive(Clone, Debug)]
 pub struct Config {
     /// The API token to use for authentication.
@@ -78,10 +80,7 @@ mod tests {
             config.user_agent,
             format!("replicate-rust/{}", env!("CARGO_PKG_VERSION"))
         );
-        assert_eq!(
-            config.base_url,
-            String::from("https://api.replicate.com/v1")
-        );
+        assert_eq!(config.base_url, "https://api.replicate.com/v1");
     }
 
     // Check if auth is set. It is supposed to exit with code 1.

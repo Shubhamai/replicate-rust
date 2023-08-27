@@ -4,8 +4,9 @@
 //! # Example
 //!
 //! ```
-//! use replicate_rust::{Replicate, config::Config};
-//!
+//! use replicate_rust::{Replicate, config::Config, training::TrainingOptions};
+//! use std::collections::HashMap;
+//! 
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //! 
@@ -13,11 +14,11 @@
 //! input.insert(String::from("train_data"), String::from("https://example.com/70k_samples.jsonl"));
 //!
 //! let result = replicate.trainings.create(
-//!     String::from("owner"),
-//!     String::from("model"),
-//!     String::from("632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532"),
+//!     "owner",
+//!     "model",
+//!     "632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
 //!     TrainingOptions {
-//!         destination: String::from("{new_owner}/{new_name}"),
+//!         destination: String::from("new_owner/new_name"),
 //!         input,
 //!         webhook: String::from("https://example.com/my-webhook"),
 //!         _webhook_events_filter: None,
@@ -39,7 +40,7 @@ pub struct TrainingOptions {
     pub input: HashMap<String, String>,
 
     pub webhook: String,
-    _webhook_events_filter: Option<WebhookEvents>,
+    pub _webhook_events_filter: Option<WebhookEvents>,
 }
 
 
@@ -80,6 +81,7 @@ impl Training {
     /// # Example
     /// ```
     /// use replicate_rust::{Replicate, config::Config, training::TrainingOptions};
+    /// use std::collections::HashMap;
     /// 
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
@@ -88,11 +90,11 @@ impl Training {
     /// input.insert(String::from("training_data"), String::from("https://example.com/70k_samples.jsonl"));
     /// 
     /// let result = replicate.trainings.create(
-    ///    String::from("owner"),
-    ///    String::from("model"),
-    ///   String::from("632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532"),
+    ///    "owner",
+    ///    "model",
+    ///   "632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
     ///  TrainingOptions {
-    ///     destination: String::from({new_owner}/{new_name}),
+    ///     destination: String::from("new_owner/new_name"),
     ///     input,
     ///     webhook: String::from("https://example.com/my-webhook"),
     ///     _webhook_events_filter: None,
@@ -102,9 +104,9 @@ impl Training {
     /// 
     pub fn create(
         &self,
-        model_owner: String,
-        model_name: String,
-        version_id: String,
+        model_owner: &str,
+        model_name: &str,
+        version_id: &str,
         options: TrainingOptions,
     ) -> Result<CreateTraining, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
@@ -144,12 +146,12 @@ impl Training {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     /// 
-    /// match replicate.trainings.get(String::from("zz4ibbonubfz7carwiefibzgga")) {
+    /// match replicate.trainings.get("zz4ibbonubfz7carwiefibzgga") {
     ///   Ok(result) => println!("Success : {:?}", result),
     ///   Err(e) => println!("Error : {}", e),
     /// };
     /// ``` 
-    pub fn get(&self, training_id: String) -> Result<GetTraining, Box<dyn std::error::Error>> {
+    pub fn get(&self, training_id: &str) -> Result<GetTraining, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -208,12 +210,12 @@ impl Training {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     /// 
-    /// match replicate.trainings.cancel(String::from("zz4ibbonubfz7carwiefibzgga")) {
+    /// match replicate.trainings.cancel("zz4ibbonubfz7carwiefibzgga") {
     ///     Ok(result) => println!("Success : {:?}", result),
     ///    Err(e) => println!("Error : {}", e),
     /// };
     /// ```
-    pub fn cancel(&self, training_id: String) -> Result<GetTraining, Box<dyn std::error::Error>> {
+    pub fn cancel(&self, training_id: &str) -> Result<GetTraining, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -273,12 +275,12 @@ mod tests {
         let replicate = Replicate::new(config);
 
         let mut input = HashMap::new();
-        input.insert(String::from("text"), String::from("..."));
+        input.insert(String::from("text"),String::from("..."));
 
         let result = replicate.trainings.create(
-            String::from("owner"),
-            String::from("model"),
-            String::from("632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532"),
+            "owner",
+            "model",
+            "632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
             TrainingOptions {
                 destination: String::from("new_owner/new_model"),
                 input,
@@ -331,7 +333,7 @@ mod tests {
 
         let result = replicate
             .trainings
-            .get(String::from("zz4ibbonubfz7carwiefibzgga"));
+            .get("zz4ibbonubfz7carwiefibzgga");
 
         assert_eq!(result?.status, PredictionStatus::succeeded);
         // Ensure the mocks were called as expected
@@ -377,7 +379,7 @@ mod tests {
 
         let result = replicate
             .trainings
-            .cancel(String::from("zz4ibbonubfz7carwiefibzgga"))?;
+            .cancel("zz4ibbonubfz7carwiefibzgga")?;
 
         assert_eq!(result.status, PredictionStatus::canceled);
         // Ensure the mocks were called as expected

@@ -10,7 +10,7 @@
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //!
-//! match replicate.collections.get(String::from("audio-generation")) {
+//! match replicate.collections.get("audio-generation") {
 //!     Ok(result) => println!("Success : {:?}", result),
 //!     Err(e) => println!("Error : {}", e),
 //! }
@@ -19,6 +19,7 @@
 
 use crate::api_definitions::{GetCollectionModels, ListCollectionModels};
 
+/// Used to interact with the [Collection Endpoints](https://replicate.com/docs/reference/http#collections.get).
 pub struct Collection {
     /// Holds a reference to a Config struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,
@@ -40,14 +41,14 @@ impl Collection {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.collections.get(String::from("audio-generation")) {
+    /// match replicate.collections.get("audio-generation") {
     ///    Ok(result) => println!("Success : {:?}", result),
     ///   Err(e) => println!("Error : {}", e),
     /// }
     /// ```
     pub fn get(
         &self,
-        collection_slug: String,
+        collection_slug: &str,
     ) -> Result<GetCollectionModels, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -127,7 +128,7 @@ mod tests {
         };
         let replicate = Replicate::new(config);
 
-        let result = replicate.collections.get(String::from("super-resolution"));
+        let result = replicate.collections.get("super-resolution");
 
         // Assert that the returned value is correct
         assert_eq!(result?.name, "Super resolution");
@@ -163,7 +164,7 @@ mod tests {
               }));
         });
 
-        let config = Config {
+        let config: Config = Config {
             auth: String::from("test"),
             base_url: server.base_url(),
             ..Config::default()

@@ -14,7 +14,7 @@
 //! let config = Config::default();
 //! let replicate = Replicate::new(config);
 //!
-//! match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
+//! match replicate.models.get("replicate", "hello-world") {
 //!    Ok(result) => println!("Success : {:?}", result),
 //!   Err(e) => println!("Error : {}", e),
 //! };
@@ -23,9 +23,12 @@
 use crate::{api_definitions::GetModel, version::Version};
 
 // #[derive(Clone)]
+/// Used to interact with the [Model Endpoints](https://replicate.com/docs/reference/http#models.get).
 pub struct Model {
-    // Holds a reference to a Replicate
+    /// Holds a reference to a Configuration struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,
+
+    /// Holds a reference to a Version struct, which contains the functionality for interacting with the version endpoints of the Replicate API.
     pub versions: Version,
 }
 
@@ -61,14 +64,14 @@ impl Model {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.models.get(String::from("replicate"), String::from("hello-world")) {
+    /// match replicate.models.get("replicate", "hello-world") {
     ///    Ok(result) => println!("Success : {:?}", result),
     ///    Err(e) => println!("Error : {}", e),
     /// };
     pub fn get(
         &self,
-        model_owner: String,
-        model_name: String,
+        model_owner: &str,
+        model_name: &str,
     ) -> Result<GetModel, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -127,7 +130,7 @@ mod tests {
 
         let result = replicate
             .models
-            .get(String::from("replicate"), String::from("hello-world"))?;
+            .get("replicate", "hello-world")?;
 
         println!("{:?}", result);
 

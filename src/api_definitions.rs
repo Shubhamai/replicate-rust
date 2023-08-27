@@ -6,8 +6,9 @@
 
 // Allow rustdoc::bare_urls for the whole module
 #![allow(rustdoc::bare_urls)]
+#![allow(missing_docs)]
 
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 
 /// If the object is empty, return None
@@ -35,7 +36,7 @@ where
 }
 
 /// GET https://api.replicate.com/v1/models/{model_owner}/{model_name}
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetModel {
     pub url: String,
 
@@ -60,7 +61,7 @@ pub struct GetModel {
 }
 
 /// GET https://api.replicate.com/v1/collections/{collection_slug}
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetCollectionModels {
     pub name: String,
     pub slug: String,
@@ -71,14 +72,14 @@ pub struct GetCollectionModels {
 }
 
 /// Prediction urls to iether cancel or get the prediction
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct PredictionsUrls {
     pub cancel: String,
     pub get: String,
 }
 
 /// POST https://api.replicate.com/v1/predictions
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetPrediction {
     // Unique identifier of the prediction
     pub id: String,
@@ -111,7 +112,7 @@ pub struct GetPrediction {
 }
 
 /// GET https://api.replicate.com/v1/trainings/{training_id}
-#[derive(Debug, serde::Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetTraining {
     pub id: String,
     pub version: String,
@@ -131,7 +132,7 @@ pub struct GetTraining {
 }
 
 /// POST https://api.replicate.com/v1/models/{model_owner}/{model_name}/versions/{version_id}/trainings
-#[derive(Debug, serde::Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CreateTraining {
     pub id: String,
     pub version: String,
@@ -149,7 +150,7 @@ pub struct CreateTraining {
 }
 
 /// POST https://api.replicate.com/v1/predictions
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CreatePrediction {
     pub id: String,
     pub version: String,
@@ -168,7 +169,7 @@ pub struct CreatePrediction {
 }
 
 /// GET https://api.replicate.com/v1/models/{model_owner}/{model_name}/versions/{version_id}
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetModelVersion {
     pub id: String,
     pub created_at: String,
@@ -179,7 +180,7 @@ pub struct GetModelVersion {
 }
 
 /// Each item of the list of collections
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ListCollectionModelsItem {
     pub name: String,
     pub slug: String,
@@ -187,7 +188,7 @@ pub struct ListCollectionModelsItem {
 }
 
 /// GET https://api.replicate.com/v1/collections
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ListCollectionModels {
     pub previous: Option<String>,
     pub next: Option<String>,
@@ -196,7 +197,7 @@ pub struct ListCollectionModels {
 }
 
 /// Represents a prediction in the list of predictions
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct PredictionsListItem {
     pub id: String,
     pub version: String,
@@ -213,7 +214,7 @@ pub struct PredictionsListItem {
 }
 
 /// GET https://api.replicate.com/v1/predictions
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ListPredictions {
     pub previous: Option<String>,
     pub next: Option<String>,
@@ -222,7 +223,7 @@ pub struct ListPredictions {
 }
 
 /// GET https://api.replicate.com/v1/models/{model_owner}/{model_name}/versions
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ListModelVersions {
     pub previous: Option<String>,
 
@@ -232,7 +233,7 @@ pub struct ListModelVersions {
 }
 
 /// Each item of the list of trainings
-#[derive(Debug, serde::Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ListTrainingItem {
     pub id: String,
 
@@ -249,7 +250,7 @@ pub struct ListTrainingItem {
 }
 
 /// GET https://api.replicate.com/v1/trainings
-#[derive(Debug, serde::Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ListTraining {
     pub previous: Option<String>,
     pub next: Option<String>,
@@ -260,7 +261,7 @@ pub struct ListTraining {
 ///////////////////////////////////////////////////////////
 
 /// Source of the prediction, either from the API or from the web
-#[derive(serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum PredictionSource {
     api,
@@ -268,7 +269,7 @@ pub enum PredictionSource {
 }
 
 /// Status of the prediction, either starting, processing, succeeded, failed or canceled
-#[derive(serde::Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum PredictionStatus {
     starting,
@@ -279,6 +280,7 @@ pub enum PredictionStatus {
 }
 
 /// Events of the webhook, either start, output, logs or completed
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum WebhookEvents {
     start,

@@ -13,7 +13,7 @@
 //! let mut inputs = std::collections::HashMap::new();
 //! inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 //!
-//! let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+//! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Create a new prediction
 //! let mut prediction = replicate.predictions.create(version, inputs);
@@ -58,12 +58,12 @@ pub fn parse_version(s: &str) -> Option<(&str, &str)> {
 }
 
 /// Helper struct for the Prediction struct. Used to create a prediction, reload for latest info, cancel it and wait for prediction to complete.
+#[allow(missing_docs)]
 pub struct PredictionClient {
-    // Holds a reference to a Replicate
+    /// Holds a reference to a Configuration struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,
 
-    // Unique identifier of the prediction
-    // id: String,
+    /// Unique identifier of the prediction
     pub id: String,
     pub version: String,
 
@@ -93,7 +93,7 @@ impl PredictionClient {
     /// let mut inputs = std::collections::HashMap::new();
     /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
     ///
-    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
     /// let mut prediction = replicate.predictions.create(version, inputs);
@@ -101,7 +101,7 @@ impl PredictionClient {
     /// ```
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
         rep: crate::config::Config,
-        version: String,
+        version: &str,
         inputs: HashMap<K, V>,
     ) -> Result<PredictionClient, Box<dyn std::error::Error>> {
         // Parse the model version string.
@@ -153,7 +153,7 @@ impl PredictionClient {
     /// let mut inputs = std::collections::HashMap::new();
     /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
     ///
-    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
     /// let mut prediction = replicate.predictions.create(version, inputs);
@@ -200,7 +200,7 @@ impl PredictionClient {
     /// let mut inputs = std::collections::HashMap::new();
     /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
     ///
-    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
     /// let mut prediction = replicate.predictions.create(version, inputs);
@@ -242,7 +242,7 @@ impl PredictionClient {
     /// let mut inputs = std::collections::HashMap::new();
     /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
     ///
-    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Create a new prediction
     /// let mut prediction = replicate.predictions.create(version, inputs);
@@ -331,12 +331,10 @@ mod tests {
         let replicate = Replicate::new(config);
 
         let mut input = HashMap::new();
-        input.insert(String::from("text"), String::from("Alice"));
+        input.insert("text", "Alice");
 
         let result = replicate.predictions.create(
-            String::from(
-                "owner/model:632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
-            ),
+            "owner/model:632231d0d49d34d5c4633bd838aee3d81d936e59a886fbf28524702003b4c532",
             input,
         );
         assert_eq!(result.id, "ufawqhfynnddngldkgtslldrkq");

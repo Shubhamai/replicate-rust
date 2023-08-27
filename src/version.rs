@@ -10,16 +10,16 @@
 //! let replicate = Replicate::new(config);
 //!
 //! // List the versions of a model.
-//! match replicate.models.versions.list(String::from("replicate"), String::from("hello-world")) {
+//! match replicate.models.versions.list("replicate", "hello-world") {
 //!        Ok(result) => println!("Success : {:?}", result),
 //!        Err(e) => println!("Error : {}", e),
 //! };
 //!
 //! // Get the details of a model version.
 //! match replicate.models.versions.get(
-//!         String::from("kvfrans"),
-//!         String::from("clipdraw"),
-//!         String::from("5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b"),
+//!         "kvfrans",
+//!         "clipdraw",
+//!         "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",
 //!     ) {
 //!         Ok(result) => println!("Success : {:?}", result),
 //!         Err(e) => println!("Error : {}", e),
@@ -30,8 +30,9 @@
 use crate::api_definitions::{GetModelVersion, ListModelVersions};
 
 // #[derive(Clone)]
+/// Used to interact with the [Model Versions Endpoints](https://replicate.com/docs/refer   ence/http#models.versions.get).
 pub struct Version {
-    // Holds a reference to a Replicate
+    /// Holds a reference to a Configuration struct, which contains the base url,  auth token among other settings.
     pub parent: crate::config::Config,
 }
 
@@ -51,9 +52,9 @@ impl Version {
     ///
     /// // Get the details of a model version.
     /// match replicate.models.versions.get(
-    ///         String::from("kvfrans"),
-    ///         String::from("clipdraw"),
-    ///         String::from("5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b"),
+    ///         "kvfrans",
+    ///         "clipdraw",
+    ///         "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",
     ///     ) {
     ///         Ok(result) => println!("Success : {:?}", result),
     ///         Err(e) => println!("Error : {}", e),
@@ -61,9 +62,9 @@ impl Version {
     /// ```
     pub fn get(
         &self,
-        model_owner: String,
-        model_name: String,
-        version_id: String,
+        model_owner: &str,
+        model_name: &str,
+        version_id: &str,
     ) -> Result<GetModelVersion, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
@@ -90,15 +91,15 @@ impl Version {
     /// let replicate = Replicate::new(config);
     ///
     /// // List the versions of a model.
-    /// match replicate.models.versions.list(String::from("replicate"), String::from("hello-world")) {
+    /// match replicate.models.versions.list("replicate", "hello-world") {
     ///        Ok(result) => println!("Success : {:?}", result),
     ///        Err(e) => println!("Error : {}", e),
     /// };
     /// ```
     pub fn list(
         &self,
-        model_owner: String,
-        model_name: String,
+        model_owner: &str,
+        model_name: &str,
     ) -> Result<ListModelVersions, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 

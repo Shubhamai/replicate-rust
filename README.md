@@ -52,7 +52,7 @@ let replicate = Replicate::new(config);
 let mut inputs = std::collections::HashMap::new();
 inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
 // Run the model.
 let result = replicate.run(version, inputs);
@@ -85,7 +85,7 @@ let replicate = Replicate::new(config);
 let mut inputs = std::collections::HashMap::new();
 inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
 // Run the model.
 let mut prediction = replicate.predictions.create(version, inputs);
@@ -132,7 +132,7 @@ let replicate = Replicate::new(config);
 let mut inputs = std::collections::HashMap::new();
 inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 
-let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 
 // Run the model.
 let mut prediction = replicate.predictions.create(version, inputs);
@@ -165,7 +165,7 @@ match replicate.predictions.list() {
 ### Get model Information
 
 ```rust
-match replicate.models.get(String::from("replicate"), String::from("hello-world"))
+match replicate.models.get("replicate", "hello-world")
     {
         Ok(result) => println!("Success : {:?}", result),
         Err(e) => println!("Error : {}", e),
@@ -180,7 +180,7 @@ match replicate.models.get(String::from("replicate"), String::from("hello-world"
 match replicate
         .models
         .versions
-        .list(String::from("replicate"), String::from("hello-world"))
+        .list("replicate", "hello-world")
     {
         Ok(result) => println!("Success : {:?}", result),
         Err(e) => println!("Error : {}", e),
@@ -192,9 +192,9 @@ match replicate
 
 ```rust
 match replicate.models.versions.get(
-        String::from("kvfrans"),
-        String::from("clipdraw"),
-        String::from("5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b"),
+        "kvfrans",
+        "clipdraw",
+        "5797a99edc939ea0e9242d5e8c9cb3bc7d125b1eac21bda852e5cb79ede2cd9b",
     ) {
         Ok(result) => println!("Success : {:?}", result),
         Err(e) => println!("Error : {}", e),
@@ -207,7 +207,7 @@ match replicate.models.versions.get(
 ### Get Collection Information
 
 ```rust
-match replicate.collections.get(String::from("audio-generation")) {
+match replicate.collections.get("audio-generation") {
         Ok(result) => println!("Success : {:?}", result),
         Err(e) => println!("Error : {}", e),
     }

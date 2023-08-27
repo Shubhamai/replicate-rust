@@ -22,7 +22,7 @@
 //! let mut inputs = std::collections::HashMap::new();
 //! inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 //!
-//! let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+//! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Run the model.
 //! let result = replicate.run(version, inputs);
@@ -34,6 +34,8 @@
 //! }
 //!
 //! ```
+#![warn(missing_docs)]
+#![warn(missing_doc_code_examples)]
 
 use std::collections::HashMap;
 
@@ -55,6 +57,11 @@ pub mod api_definitions;
 pub mod prediction_client;
 pub mod retry;
 
+/// Rust Client for interacting with the [Replicate API](https://replicate.com/docs/api/). Currently supports the following endpoints:
+/// * [Predictions](https://replicate.com/docs/reference/http#predictions.create)
+/// * [Models](https://replicate.com/docs/reference/http#models.get)
+/// * [Trainings](https://replicate.com/docs/reference/http#trainings.create)
+/// * [Collections](https://replicate.com/docs/reference/http#collections.get)
 pub struct Replicate {
     /// Holds a reference to a Config struct.
     config: Config,
@@ -117,7 +124,7 @@ impl Replicate {
     /// let mut inputs = std::collections::HashMap::new();
     /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
     ///
-    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Run the model.
     /// let result = replicate.run(version, inputs);
@@ -134,7 +141,7 @@ impl Replicate {
     ///
     pub fn run<K: serde::Serialize, V: serde::Serialize>(
         &self,
-        version: String,
+        version: &str,
         inputs: HashMap<K, V>,
         // TODO : Perhaps not Box<dyn std::error::Error> but something more specific?
     ) -> Result<GetPrediction, Box<dyn std::error::Error>> {
@@ -214,8 +221,7 @@ mod tests {
         let mut inputs = std::collections::HashMap::new();
         inputs.insert("text", "world");
 
-        let version = String::from("test/model:v1");
-        let result = replicate.run(version, inputs).unwrap();
+        let result = replicate.run("test/model:v1", inputs).unwrap();
 
         // Assert that the returned value is correct
         assert_eq!(result.output, Some(serde_json::to_value("hello world")?));

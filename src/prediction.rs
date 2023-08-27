@@ -12,7 +12,7 @@
 //! let mut inputs = std::collections::HashMap::new();
 //! inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 //!
-//! let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+//! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Run the model.
 //! let result = replicate.predictions.create(version, inputs).wait();
@@ -37,7 +37,7 @@
 //! let mut inputs = std::collections::HashMap::new();
 //! inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
 //!
-//! let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+//! let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
 //!
 //! // Run the model.
 //! let mut prediction = replicate.predictions.create(version, inputs);
@@ -75,9 +75,10 @@ pub struct PredictionPayload<K: serde::Serialize, V: serde::ser::Serialize> {
     pub input: HashMap<K, V>,
 }
 
+/// Used to interact with the [Prediction Endpoints](https://replicate.com/docs/reference/http#predictions.get).
 #[derive(Clone)]
 pub struct Prediction {
-    // Holds a reference to a Config struct. Use to get the base url, auth token among other settings.
+    /// Holds a reference to a Config struct. Use to get the base url, auth token among other settings.
     pub parent: crate::config::Config,
 }
 
@@ -102,7 +103,7 @@ impl Prediction {
     /// let mut inputs = std::collections::HashMap::new();
     /// inputs.insert("prompt", "a  19th century portrait of a wombat gentleman");
     ///
-    /// let version = String::from("stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478");
+    /// let version = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
     ///
     /// // Run the model.
     /// let mut prediction = replicate.predictions.create(version, inputs);
@@ -122,7 +123,7 @@ impl Prediction {
     ///
     pub fn create<K: serde::Serialize, V: serde::ser::Serialize>(
         self,
-        version: String,
+        version: &str,
         inputs: HashMap<K, V>,
     ) -> PredictionClient {
         match PredictionClient::create(self.parent, version, inputs) {
@@ -173,12 +174,12 @@ impl Prediction {
     /// let config = Config::default();
     /// let replicate = Replicate::new(config);
     ///
-    /// match replicate.predictions.get(String::from("rrr4z55ocneqzikepnug6xezpe")) {
+    /// match replicate.predictions.get("rrr4z55ocneqzikepnug6xezpe") {
     ///   Ok(result) => println!("Success : {:?}", result),
     ///   Err(e) => println!("Error : {}", e),
     /// };
     ///
-    pub fn get(&self, id: String) -> Result<GetPrediction, Box<dyn std::error::Error>> {
+    pub fn get(&self, id: &str) -> Result<GetPrediction, Box<dyn std::error::Error>> {
         let client = reqwest::blocking::Client::new();
 
         let response = client
@@ -240,7 +241,7 @@ mod tests {
         let replicate = Replicate::new(config);
 
         let mut input = HashMap::new();
-        input.insert(String::from("text"), String::from("..."));
+        input.insert("text", "...");
 
         let result = replicate.predictions.list()?;
 
@@ -295,9 +296,7 @@ mod tests {
         };
         let replicate = Replicate::new(config);
 
-        let result = replicate
-            .predictions
-            .get(String::from("rrr4z55ocneqzikepnug6xezpe"))?;
+        let result = replicate.predictions.get("rrr4z55ocneqzikepnug6xezpe")?;
 
         assert_eq!(result.id, "rrr4z55ocneqzikepnug6xezpe");
 
